@@ -1123,3 +1123,1408 @@ public void SpawnDecorationGameObjects(MapGeneratorData data)
 <br />
 
 \# Unity 2D 瓦片地图程序化生成系统 - 开发备忘录 ## 一、核心架构设计 ### 1. 分层生成架构（核心原则：解耦、可扩展、配置驱动） \`\`\`mermaid graph TD     A\[MapGeneratorController 总控制器] --> B\[生成层抽象基类 MapGeneratorLayer]     B --> B1\[基础地形层 BaseTerrainLayer]     B --> B2\[地形平滑层（邻域投票/连通域过滤）]     B --> B3\[精细结构层（房屋/高墙/溪流）]     B --> B4\[装饰层（花朵/船只/宝箱）]     A --> C\[MapVisualizer 可视化层]     A --> D\[MapGeneratorData 数据容器]     C --> E\[多Tilemap绘制（基础/精细/装饰）] \`\`\`  ### 2. 核心类职责 | 类名                  | 核心职责                                                                 | |-----------------------|--------------------------------------------------------------------------| | MapGeneratorLayer     | 所有生成层的抽象基类，定义 Generate/Initialize/Cleanup 接口              | | MapGeneratorData      | 全局数据容器，存储各层坐标-类型映射，层间唯一交互媒介                     | | MapGeneratorController| 对外唯一入口，按顺序调度各生成层，控制生成流程                           | | MapVisualizer         | 封装多Tilemap绘制逻辑，提供默认瓦片兜底，处理坐标转换                     |  ## 二、核心功能实现 ### 1. 基础地形生成（柏林噪声+多频率叠加） #### 核心参数与算法 - \*\*基础噪声配置\*\*：\`baseNoiseScale=0.01\~0.03\`（控制地形平滑度）、随机种子（保证可复现） - \*\*多频率叠加（FBM分形布朗运动）\*\*：   - \`octaves=3\~5\`（叠加层数，3层最佳）   - \`frequencyLacunarity=2\`（频率倍率，每层×2）   - \`amplitudeGain=0.5\`（振幅倍率，每层×0.5）   - 必须开启 \`normalizeResult=true\`（归一化到0\~1） - \*\*地形类型映射\*\*：   \`\`\`   噪声值 < 0.3 → 水域 | 0.3 ≤ 值 < 0.6 → 草地 | 0.6 ≤ 值 < 0.85 → 山脉   0.85 ≤ 值 < 0.95 → 岩石 | 值 ≥ 0.95 → 沙滩   \`\`\`  #### 关键优化 - 噪声扭曲（可选）：\`warpScale=0.01\`、\`warpStrength=10\`，增强地形自然度 - 平滑层处理：叠加噪声后适当调大 \`smoothIterations=2\~3\`  ### 2. 地形平滑层（解决Rule Tile匹配失败） #### （1）邻域投票平滑层 - \`smoothIterations=1\~3\`（迭代次数，越多越平滑） - \`neighborhoodRadius=1\`（8邻域，基础款） - 支持地形优先级配置，避免关键地形被覆盖  #### （2）连通域过滤层 - \`minComponentSize=3\~8\`（最小连通域面积，清理孤立碎块） - 可指定过滤地形类型（如水/草/沙），碎块替换为主要地形  ### 3. 精细结构+装饰层生成规则 #### 核心约束 - 水域专属：船只（生成概率0.005，最小间距8） - 草地/沙滩专属：房屋（0.01/5）、告示牌、宝箱 - 通用规则：随机旋转、单瓦片仅生成一个、最小间距避免扎堆  #### 扩展方式 新增结构/装饰类型只需： 1. 扩展枚举（FineStructureType/DecorationType） 2. 实现对应生成层（继承MapGeneratorLayer） 3. 配置到控制器列表，调整执行顺序  ### 4. 多Tilemap绘制（最佳实践） #### Tilemap分层规划 | Tilemap名称          | Order in Layer | 碰撞体配置               | 用途               | |----------------------|----------------|--------------------------|--------------------| | BaseTerrainTilemap   | 0              | Tilemap Collider 2D      | 基础地形（水/草/山）| | FineStructureTilemap | 10             | Composite Collider 2D    | 房屋/高墙/溪流     | | DecorationTilemap    | 20             | 无                       | 花朵/船只/宝箱     |  #### 坐标处理（3D项目中的2D适配） - 平面场景：保留Vector2Int存储，绘制时转换为Vector3Int（Z固定） - 分层场景：直接使用Vector3Int，按地形类型指定Z层 - 转换工具方法：   \`\`\`csharp   private Vector3Int ConvertToTilemapPos(Vector2Int pos2D, int zLayer)   {       return new Vector3Int(pos2D.x, pos2D.y, zLayer); // 需适配Tilemap Y轴翻转   }   \`\`\`  #### 默认瓦片机制（容错+调试） - 为每个Tilemap层级配置独立默认瓦片（建议高对比度颜色） - switch匹配逻辑增加default分支，未匹配类型自动使用默认瓦片 - 空值保护+分级日志（Warning提示未匹配，Error提示空瓦片）  ## 三、关键开发规范 ### 1. 扩展原则（开闭原则） - 新增生成层：继承MapGeneratorLayer，实现Generate方法，无需修改核心逻辑 - 新增地形/装饰类型：扩展枚举→新增瓦片配置→补充switch分支（默认瓦片兜底） - 新增Tilemap层级：在MapVisualizer中添加引用，扩展Draw方法  ### 2. 性能优化 - 噪声叠加：octaves≤5，大地图（200×200+）建议异步生成 - 平滑层：neighborhoodRadius=1足够，避免过度迭代 - 批量操作：ClearAllTiles替代逐格删除，减少GC  ### 3. 调试技巧 - 分层预览：先单层级生成（如仅基础地形），确认后叠加其他层 - 日志分级：未匹配类型→Warning，空瓦片→Error，快速定位问题 - 种子固定：测试阶段关闭useRandomSeed，保证结果可复现  ## 四、核心代码模板（关键片段） ### 1. 多频率噪声叠加核心方法 \`\`\`csharp private float CalculateFractalNoise(float x, float y, Vector2\[] octaveOffsets, float maxPossibleValue) {     // 可选：噪声扭曲     if (enableNoiseWarp)     {         float warpX = Mathf.PerlinNoise(x \* warpScale, y \* warpScale) \* warpStrength;         float warpY = Mathf.PerlinNoise((x + 5.2f) \* warpScale, (y + 1.3f) \* warpScale) \* warpStrength;         x += warpX;         y += warpY;     }      float totalNoise = 0;     float currentFrequency = baseNoiseScale;     float currentAmplitude = 1;      for (int i = 0; i < octaves; i++)     {         float noiseX = (x + octaveOffsets\[i].x) \* currentFrequency;         float noiseY = (y + octaveOffsets\[i].y) \* currentFrequency;         float perlinValue = Mathf.PerlinNoise(noiseX, noiseY) \* 2 - 1;         totalNoise += perlinValue \* currentAmplitude;          currentFrequency \*= frequencyLacunarity;         currentAmplitude \*= amplitudeGain;     }      // 归一化到0\~1     if (normalizeResult)     {         totalNoise = (totalNoise + 1) / 2;         totalNoise /= maxPossibleValue;     }     return Mathf.Clamp01(totalNoise); } \`\`\`  ### 2. 默认瓦片绘制封装 \`\`\`csharp private void SetBaseTerrainTile(Vector3Int tilemapPos, TerrainType terrainType) {     RuleTile targetTile = baseTerrainDefaultTile;     string typeName = terrainType.ToString();      switch (terrainType)     {         case TerrainType.Water: targetTile = waterTile; break;         case TerrainType.Grass: targetTile = grassTile; break;         // 其他地形类型...         default:             Debug.LogWarning($"未找到地形类型 {typeName} 对应的瓦片，使用默认瓦片");             break;     }      // 空值保护     if (targetTile == null)     {         targetTile = baseTerrainDefaultTile;         if (targetTile == null)         {             Debug.LogError($"地形类型 {typeName} 瓦片和默认瓦片均为空，跳过绘制");             return;         }     }      baseTerrainTilemap.SetTile(tilemapPos, targetTile); } \`\`\`  ### 3. 控制器核心生成流程 \`\`\`csharp public void GenerateMap() {     // 重置数据     mapData.Clear();     // 设置种子     mapData.seed = useRandomSeed ? Random.Range(0, int.MaxValue) : seed;     // 按顺序执行生成层     foreach (var layer in generatorLayers)     {         if (layer == null || !layer.isEnabled) continue;         layer.Initialize(mapData);         layer.Generate(mapData);         layer.Cleanup();     }     // 绘制所有层     mapVisualizer.DrawAllLayers(mapData); } \`\`\`  ## 五、常见问题解决方案 | 问题现象                  | 解决方案                                                                 | |---------------------------|--------------------------------------------------------------------------| | Rule Tile匹配失败（边缘碎）| 1. 增加邻域投票迭代次数 2. 启用连通域过滤 3. 降低噪声频率/叠加层数       | | 地形过度平滑丢失细节      | 1. 减少平滑迭代次数 2. 增加噪声叠加层数 3. 调低振幅倍率（0.4\~0.5）       | | 瓦片绘制为空              | 1. 检查默认瓦片配置 2. 查看Console的Error日志 3. 确认枚举与switch匹配    | | 3D项目中坐标错乱          | 1. 转换坐标时适配Tilemap Y轴翻转 2. 平面场景固定Z层，分层场景用Vector3Int | | 生成卡顿                  | 1. 减少octaves层数 2. 异步生成 3. 分区块生成Tilemap                     |
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+<br />
+
+# 区块地图生成方案
+# 从零构建无限区块地形生成系统（完整接口化实现）
+## 一、系统文件结构（按功能模块划分）
+```
+Assets/
+├── Scripts/
+│   ├── Core/                  # 核心抽象层（接口+基础定义）
+│   │   ├── Enums.cs           # 所有枚举定义
+│   │   ├── Constants.cs       # 全局常量
+│   │   ├── Interfaces/
+│   │   │   ├── IChunk.cs      # 区块接口
+│   │   │   ├── IChunkData.cs  # 区块数据接口
+│   │   │   ├── IChunkGenerator.cs # 区块生成器接口
+│   │   │   └── IChunkVisualizer.cs # 区块可视化接口
+│   ├── Data/                  # 数据实现层
+│   │   ├── ChunkData.cs       # 区块数据具体实现
+│   ├── Chunk/                 # 区块核心实现
+│   │   ├── Chunk.cs           # 区块具体实现
+│   │   ├── ChunkCoordinateUtility.cs # 坐标转换工具
+│   ├── Generator/             # 生成器实现层
+│   │   ├── BaseTerrainGenerator.cs # 基础地形生成器
+│   │   ├── TerrainSmoothingGenerator.cs # 地形平滑生成器
+│   │   ├── FineStructureGenerator.cs # 精细结构生成器
+│   │   └── DecorationGenerator.cs # 装饰生成器
+│   ├── Manager/               # 管理器层
+│   │   ├── ChunkManager.cs    # 全局区块管理器
+│   │   └── ChunkLoader.cs     # 玩家驱动的区块加载器
+│   └── Visualizer/            # 可视化实现层
+│       ├── ChunkVisualizer.cs # 区块可视化具体实现
+│       └── TilemapUtility.cs  # Tilemap操作工具
+```
+
+## 二、核心抽象层（接口+基础定义）
+### 1. 基础枚举与常量（命名空间：MapSystem.Core）
+```csharp
+using UnityEngine;
+
+namespace MapSystem.Core
+{
+    /// <summary>
+    /// 基础地形类型枚举
+    /// </summary>
+    public enum TerrainType
+    {
+        Water, 
+        Grass, 
+        Mountain, 
+        Rock, 
+        Sand, 
+        Default // 兜底类型
+    }
+
+    /// <summary>
+    /// 精细结构类型枚举
+    /// </summary>
+    public enum FineStructureType
+    {
+        House, 
+        Wall, 
+        Stream, 
+        Default
+    }
+
+    /// <summary>
+    /// 装饰类型枚举
+    /// </summary>
+    public enum DecorationType
+    {
+        Boat, 
+        Flower, 
+        Chest, 
+        Default
+    }
+
+    /// <summary>
+    /// 区块状态枚举
+    /// </summary>
+    public enum ChunkState
+    {
+        Unloaded,    // 未加载（无数据、无Tilemap）
+        Generating,  // 生成中（避免重复请求）
+        Loaded,      // 已加载（数据+Tilemap就绪）
+        Unloading    // 卸载中（清理Tilemap）
+    }
+
+    /// <summary>
+    /// 全局地图常量配置
+    /// </summary>
+    public static class MapConstants
+    {
+        public const int ChunkSize = 32;               // 区块基础大小（瓦片数）
+        public const int ChunkBufferSize = 2;          // 区块缓冲区大小（用于平滑）
+        public const int LoadRange = 3;                // 玩家周围加载区块范围
+        public const int UnloadRange = 5;              // 玩家周围卸载区块范围
+        public static int GlobalSeed = 12345;          // 全局种子（保证生成一致性）
+        public const int TilemapZLayer = 0;            // Tilemap的Z轴层级
+        public const float ChunkLoadCheckInterval = 0.5f; // 玩家位置检查间隔
+    }
+}
+```
+
+### 2. 核心接口定义（命名空间：MapSystem.Core.Interfaces）
+```csharp
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+
+namespace MapSystem.Core.Interfaces
+{
+    /// <summary>
+    /// 区块数据核心接口（定义区块数据的存取规范）
+    /// </summary>
+    public interface IChunkData : IDisposable
+    {
+        /// <summary>
+        /// 区块坐标
+        /// </summary>
+        Vector2Int ChunkCoord { get; }
+        
+        /// <summary>
+        /// 生成完成标记
+        /// </summary>
+        bool IsGenerated { get; set; }
+
+        /// <summary>
+        /// 设置指定世界坐标的任意类型数据
+        /// </summary>
+        /// <typeparam name="T">数据类型（TerrainType/FineStructureType/DecorationType）</typeparam>
+        void SetData<T>(Vector2Int worldPos, T data) where T : Enum;
+        
+        /// <summary>
+        /// 获取指定世界坐标的任意类型数据
+        /// </summary>
+        T GetData<T>(Vector2Int worldPos) where T : Enum;
+        
+        /// <summary>
+        /// 获取该区块内指定类型的所有数据
+        /// </summary>
+        Dictionary<Vector2Int, T> GetAllData<T>() where T : Enum;
+        
+        /// <summary>
+        /// 清空区块所有数据
+        /// </summary>
+        void Clear();
+        
+        /// <summary>
+        /// 检查世界坐标是否属于该区块（可选包含缓冲区）
+        /// </summary>
+        bool ContainsWorldPos(Vector2Int worldPos, bool includeBuffer = true);
+    }
+
+    /// <summary>
+    /// 区块核心接口（定义区块的基础行为）
+    /// </summary>
+    public interface IChunk : IDisposable
+    {
+        /// <summary>
+        /// 区块坐标
+        /// </summary>
+        Vector2Int ChunkCoord { get; }
+        
+        /// <summary>
+        /// 区块状态
+        /// </summary>
+        ChunkState State { get; set; }
+        
+        /// <summary>
+        /// 区块数据引用
+        /// </summary>
+        IChunkData ChunkData { get; set; }
+        
+        /// <summary>
+        /// 基础地形Tilemap
+        /// </summary>
+        Tilemap BaseTerrainTilemap { get; }
+        
+        /// <summary>
+        /// 精细结构Tilemap
+        /// </summary>
+        Tilemap FineStructureTilemap { get; }
+        
+        /// <summary>
+        /// 装饰Tilemap
+        /// </summary>
+        Tilemap DecorationTilemap { get; }
+
+        /// <summary>
+        /// 初始化区块（创建Tilemap等资源）
+        /// </summary>
+        /// <param name="parent">父Transform</param>
+        void Initialize(Transform parent);
+        
+        /// <summary>
+        /// 清理区块Tilemap（保留数据）
+        /// </summary>
+        void ClearTilemaps();
+    }
+
+    /// <summary>
+    /// 区块生成器接口（定义区块生成的标准行为）
+    /// </summary>
+    public interface IChunkGenerator
+    {
+        /// <summary>
+        /// 是否启用该生成器
+        /// </summary>
+        bool IsEnabled { get; set; }
+        
+        /// <summary>
+        /// 生成优先级（数值越高越先执行）
+        /// </summary>
+        int Priority { get; }
+
+        /// <summary>
+        /// 初始化生成器
+        /// </summary>
+        void Initialize();
+        
+        /// <summary>
+        /// 为指定区块执行生成逻辑
+        /// </summary>
+        /// <param name="chunkData">目标区块数据</param>
+        /// <param name="onComplete">生成完成回调</param>
+        void Generate(IChunkData chunkData, Action onComplete = null);
+        
+        /// <summary>
+        /// 清理生成器资源
+        /// </summary>
+        void Cleanup();
+    }
+
+    /// <summary>
+    /// 区块可视化接口（定义区块绘制的标准行为）
+    /// </summary>
+    public interface IChunkVisualizer
+    {
+        /// <summary>
+        /// 基础地形默认瓦片
+        /// </summary>
+        RuleTile BaseTerrainDefaultTile { get; set; }
+        
+        /// <summary>
+        /// 精细结构默认瓦片
+        /// </summary>
+        Tile FineStructureDefaultTile { get; set; }
+        
+        /// <summary>
+        /// 装饰默认瓦片
+        /// </summary>
+        Tile DecorationDefaultTile { get; set; }
+
+        /// <summary>
+        /// 绘制指定区块
+        /// </summary>
+        void DrawChunk(IChunk chunk);
+        
+        /// <summary>
+        /// 清理指定区块的可视化内容
+        /// </summary>
+        void ClearChunk(IChunk chunk);
+        
+        /// <summary>
+        /// 世界坐标转换为Tilemap坐标
+        /// </summary>
+        Vector3Int WorldToTilemapPos(Vector2Int worldPos);
+    }
+}
+```
+
+## 三、核心工具类实现
+### 1. 区块坐标工具（命名空间：MapSystem.Chunk）
+```csharp
+using UnityEngine;
+using MapSystem.Core;
+
+namespace MapSystem.Chunk
+{
+    /// <summary>
+    /// 区块坐标转换工具类（静态工具）
+    /// </summary>
+    public static class ChunkCoordinateUtility
+    {
+        /// <summary>
+        /// 世界瓦片坐标转换为区块坐标
+        /// </summary>
+        public static Vector2Int WorldToChunkCoord(Vector2Int worldPos)
+        {
+            int chunkX = Mathf.FloorToInt((float)worldPos.x / MapConstants.ChunkSize);
+            int chunkY = Mathf.FloorToInt((float)worldPos.y / MapConstants.ChunkSize);
+            return new Vector2Int(chunkX, chunkY);
+        }
+
+        /// <summary>
+        /// 世界瓦片坐标转换为区块内局部坐标
+        /// </summary>
+        public static Vector2Int WorldToLocalCoord(Vector2Int worldPos)
+        {
+            int localX = worldPos.x % MapConstants.ChunkSize;
+            int localY = worldPos.y % MapConstants.ChunkSize;
+            
+            // 处理负数取模问题
+            if (localX < 0) localX += MapConstants.ChunkSize;
+            if (localY < 0) localY += MapConstants.ChunkSize;
+            
+            return new Vector2Int(localX, localY);
+        }
+
+        /// <summary>
+        /// 区块坐标+局部坐标转换为世界瓦片坐标
+        /// </summary>
+        public static Vector2Int ChunkToWorldCoord(Vector2Int chunkCoord, Vector2Int localCoord)
+        {
+            int worldX = chunkCoord.x * MapConstants.ChunkSize + localCoord.x;
+            int worldY = chunkCoord.y * MapConstants.ChunkSize + localCoord.y;
+            return new Vector2Int(worldX, worldY);
+        }
+
+        /// <summary>
+        /// 获取区块的世界坐标范围（BoundsInt）
+        /// </summary>
+        public static BoundsInt GetChunkWorldBounds(Vector2Int chunkCoord, bool includeBuffer = true)
+        {
+            int buffer = includeBuffer ? MapConstants.ChunkBufferSize : 0;
+            int startX = chunkCoord.x * MapConstants.ChunkSize - buffer;
+            int startY = chunkCoord.y * MapConstants.ChunkSize - buffer;
+            int sizeX = MapConstants.ChunkSize + buffer * 2;
+            int sizeY = MapConstants.ChunkSize + buffer * 2;
+            
+            return new BoundsInt(startX, startY, MapConstants.TilemapZLayer, sizeX, sizeY, 1);
+        }
+
+        /// <summary>
+        /// 生成区块专属种子（保证可复现）
+        /// </summary>
+        public static int GetChunkSeed(Vector2Int chunkCoord)
+        {
+            // 使用大质数避免种子碰撞
+            return MapConstants.GlobalSeed + chunkCoord.x * 1000003 + chunkCoord.y * 10000033;
+        }
+    }
+}
+```
+
+### 2. Tilemap工具类（命名空间：MapSystem.Visualizer）
+```csharp
+using UnityEngine;
+using UnityEngine.Tilemaps;
+using MapSystem.Core;
+
+namespace MapSystem.Visualizer
+{
+    /// <summary>
+    /// Tilemap操作工具类
+    /// </summary>
+    public static class TilemapUtility
+    {
+        /// <summary>
+        /// 安全设置Tilemap瓦片（包含空值检查）
+        /// </summary>
+        public static void SetTileSafe(Tilemap tilemap, Vector3Int pos, TileBase tile)
+        {
+            if (tilemap == null)
+            {
+                Debug.LogError("[TilemapUtility] Tilemap引用为空，无法设置瓦片");
+                return;
+            }
+            
+            if (tile == null)
+            {
+                Debug.LogWarning($"[TilemapUtility] 瓦片为空，跳过位置 {pos} 的绘制");
+                return;
+            }
+            
+            tilemap.SetTile(pos, tile);
+        }
+
+        /// <summary>
+        /// 清空Tilemap所有瓦片
+        /// </summary>
+        public static void ClearTilemapSafe(Tilemap tilemap)
+        {
+            if (tilemap == null) return;
+            tilemap.ClearAllTiles();
+        }
+
+        /// <summary>
+        /// 创建带排序层级的Tilemap
+        /// </summary>
+        public static Tilemap CreateTilemap(string name, Transform parent, int sortingOrder)
+        {
+            GameObject tilemapObj = new GameObject(name);
+            tilemapObj.transform.SetParent(parent);
+            
+            Tilemap tilemap = tilemapObj.AddComponent<Tilemap>();
+            TilemapRenderer renderer = tilemapObj.AddComponent<TilemapRenderer>();
+            renderer.sortingOrder = sortingOrder;
+            
+            return tilemap;
+        }
+
+        /// <summary>
+        /// 为Tilemap添加碰撞体（仅基础地形层使用）
+        /// </summary>
+        public static void AddCollisionToTilemap(Tilemap tilemap)
+        {
+            if (tilemap == null) return;
+            
+            if (!tilemap.gameObject.TryGetComponent<TilemapCollider2D>(out _))
+            {
+                tilemap.gameObject.AddComponent<TilemapCollider2D>();
+            }
+        }
+    }
+}
+```
+
+## 四、数据层实现
+### 1. 区块数据实现（命名空间：MapSystem.Data）
+```csharp
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+using MapSystem.Core;
+using MapSystem.Core.Interfaces;
+using MapSystem.Chunk;
+
+namespace MapSystem.Data
+{
+    /// <summary>
+    /// 区块数据具体实现（线程安全）
+    /// </summary>
+    public class ChunkData : IChunkData
+    {
+        // 数据存储字典（按类型分类）
+        private readonly Dictionary<Type, Dictionary<Vector2Int, Enum>> _dataDict = new();
+        
+        // 基础属性
+        public Vector2Int ChunkCoord { get; private set; }
+        public bool IsGenerated { get; set; }
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public ChunkData(Vector2Int chunkCoord)
+        {
+            ChunkCoord = chunkCoord;
+            IsGenerated = false;
+            
+            // 初始化各类型数据字典
+            _dataDict[typeof(TerrainType)] = new Dictionary<Vector2Int, Enum>();
+            _dataDict[typeof(FineStructureType)] = new Dictionary<Vector2Int, Enum>();
+            _dataDict[typeof(DecorationType)] = new Dictionary<Vector2Int, Enum>();
+        }
+
+        /// <summary>
+        /// 设置指定世界坐标的任意类型数据
+        /// </summary>
+        public void SetData<T>(Vector2Int worldPos, T data) where T : Enum
+        {
+            if (!_dataDict.ContainsKey(typeof(T)))
+            {
+                Debug.LogError($"[ChunkData] 不支持的数据类型：{typeof(T).Name}");
+                return;
+            }
+
+            lock (_dataDict) // 线程安全锁
+            {
+                _dataDict[typeof(T)][worldPos] = data;
+            }
+        }
+
+        /// <summary>
+        /// 获取指定世界坐标的任意类型数据
+        /// </summary>
+        public T GetData<T>(Vector2Int worldPos) where T : Enum
+        {
+            if (!_dataDict.ContainsKey(typeof(T)))
+            {
+                Debug.LogError($"[ChunkData] 不支持的数据类型：{typeof(T).Name}");
+                return default;
+            }
+
+            lock (_dataDict)
+            {
+                if (_dataDict[typeof(T)].TryGetValue(worldPos, out Enum value))
+                {
+                    return (T)value;
+                }
+                
+                // 返回该类型的默认值（兜底）
+                return (T)Enum.Parse(typeof(T), nameof(TerrainType.Default));
+            }
+        }
+
+        /// <summary>
+        /// 获取该区块内指定类型的所有数据
+        /// </summary>
+        public Dictionary<Vector2Int, T> GetAllData<T>() where T : Enum
+        {
+            if (!_dataDict.ContainsKey(typeof(T)))
+            {
+                Debug.LogError($"[ChunkData] 不支持的数据类型：{typeof(T).Name}");
+                return new Dictionary<Vector2Int, T>();
+            }
+
+            lock (_dataDict)
+            {
+                var result = new Dictionary<Vector2Int, T>();
+                foreach (var kvp in _dataDict[typeof(T)])
+                {
+                    result[kvp.Key] = (T)kvp.Value;
+                }
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// 清空区块所有数据
+        /// </summary>
+        public void Clear()
+        {
+            lock (_dataDict)
+            {
+                foreach (var dict in _dataDict.Values)
+                {
+                    dict.Clear();
+                }
+                IsGenerated = false;
+            }
+        }
+
+        /// <summary>
+        /// 检查世界坐标是否属于该区块
+        /// </summary>
+        public bool ContainsWorldPos(Vector2Int worldPos, bool includeBuffer = true)
+        {
+            BoundsInt bounds = ChunkCoordinateUtility.GetChunkWorldBounds(ChunkCoord, includeBuffer);
+            return bounds.Contains(new Vector3Int(worldPos.x, worldPos.y, MapConstants.TilemapZLayer));
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            Clear();
+            _dataDict.Clear();
+        }
+    }
+}
+```
+
+## 五、区块核心实现
+### 1. 区块具体实现（命名空间：MapSystem.Chunk）
+```csharp
+using UnityEngine;
+using UnityEngine.Tilemaps;
+using System;
+using MapSystem.Core;
+using MapSystem.Core.Interfaces;
+using MapSystem.Visualizer;
+
+namespace MapSystem.Chunk
+{
+    /// <summary>
+    /// 区块具体实现
+    /// </summary>
+    public class Chunk : IChunk
+    {
+        // 核心属性
+        public Vector2Int ChunkCoord { get; private set; }
+        public ChunkState State { get; set; }
+        public IChunkData ChunkData { get; set; }
+        
+        // Tilemap引用
+        public Tilemap BaseTerrainTilemap { get; private set; }
+        public Tilemap FineStructureTilemap { get; private set; }
+        public Tilemap DecorationTilemap { get; private set; }
+        
+        // 内部引用
+        private Transform _chunkTransform;
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        public Chunk(Vector2Int chunkCoord)
+        {
+            ChunkCoord = chunkCoord;
+            State = ChunkState.Unloaded;
+        }
+
+        /// <summary>
+        /// 初始化区块（创建Tilemap）
+        /// </summary>
+        public void Initialize(Transform parent)
+        {
+            // 创建区块根物体
+            _chunkTransform = new GameObject($"Chunk_{ChunkCoord.x}_{ChunkCoord.y}").transform;
+            _chunkTransform.SetParent(parent);
+            
+            // 创建三层Tilemap
+            BaseTerrainTilemap = TilemapUtility.CreateTilemap("BaseTerrain", _chunkTransform, 0);
+            FineStructureTilemap = TilemapUtility.CreateTilemap("FineStructure", _chunkTransform, 10);
+            DecorationTilemap = TilemapUtility.CreateTilemap("Decoration", _chunkTransform, 20);
+            
+            // 为基础地形层添加碰撞体
+            TilemapUtility.AddCollisionToTilemap(BaseTerrainTilemap);
+            
+            State = ChunkState.Unloaded;
+        }
+
+        /// <summary>
+        /// 清理区块Tilemap
+        /// </summary>
+        public void ClearTilemaps()
+        {
+            TilemapUtility.ClearTilemapSafe(BaseTerrainTilemap);
+            TilemapUtility.ClearTilemapSafe(FineStructureTilemap);
+            TilemapUtility.ClearTilemapSafe(DecorationTilemap);
+        }
+
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Dispose()
+        {
+            ClearTilemaps();
+            
+            // 销毁Tilemap物体
+            if (_chunkTransform != null)
+            {
+                GameObject.Destroy(_chunkTransform.gameObject);
+            }
+            
+            // 释放数据
+            ChunkData?.Dispose();
+            ChunkData = null;
+            
+            State = ChunkState.Unloaded;
+        }
+    }
+}
+```
+
+## 六、生成器实现
+### 1. 基础地形生成器（命名空间：MapSystem.Generator）
+```csharp
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+using MapSystem.Core;
+using MapSystem.Core.Interfaces;
+using MapSystem.Data;
+using MapSystem.Chunk;
+
+namespace MapSystem.Generator
+{
+    /// <summary>
+    /// 基础地形生成器（柏林噪声+多频率叠加）
+    /// </summary>
+    [Serializable]
+    public class BaseTerrainGenerator : IChunkGenerator
+    {
+        [Header("噪声配置")]
+        [Tooltip("基础噪声频率（控制大尺度地形）")]
+        public float BaseNoiseScale = 0.02f;
+        
+        [Tooltip("噪声叠加层数")]
+        public int Octaves = 3;
+        
+        [Tooltip("频率倍率（每层×该值）")]
+        public float FrequencyLacunarity = 2f;
+        
+        [Tooltip("振幅倍率（每层×该值）")]
+        public float AmplitudeGain = 0.5f;
+        
+        [Tooltip("是否归一化噪声结果")]
+        public bool NormalizeResult = true;
+
+        [Header("地形阈值")]
+        public float WaterThreshold = 0.3f;
+        public float GrassThreshold = 0.6f;
+        public float MountainThreshold = 0.85f;
+        public float RockThreshold = 0.95f;
+
+        // 接口实现
+        public bool IsEnabled { get; set; } = true;
+        public int Priority { get; } = 0; // 最高优先级
+
+        /// <summary>
+        /// 初始化生成器
+        /// </summary>
+        public void Initialize()
+        {
+            // 初始化逻辑（如加载配置）
+        }
+
+        /// <summary>
+        /// 生成区块基础地形
+        /// </summary>
+        public void Generate(IChunkData chunkData, Action onComplete = null)
+        {
+            if (!IsEnabled || chunkData == null)
+            {
+                onComplete?.Invoke();
+                return;
+            }
+
+            try
+            {
+                Vector2Int chunkCoord = chunkData.ChunkCoord;
+                BoundsInt chunkBounds = ChunkCoordinateUtility.GetChunkWorldBounds(chunkCoord);
+                
+                // 设置区块专属种子
+                int chunkSeed = ChunkCoordinateUtility.GetChunkSeed(chunkCoord);
+                Random.InitState(chunkSeed);
+                
+                // 生成噪声偏移
+                Vector2[] octaveOffsets = GenerateOctaveOffsets();
+                
+                // 计算最大可能值（用于归一化）
+                float maxPossibleValue = CalculateMaxPossibleValue();
+
+                // 遍历区块所有坐标（包含缓冲区）
+                for (int x = chunkBounds.xMin; x < chunkBounds.xMax; x++)
+                {
+                    for (int y = chunkBounds.yMin; y < chunkBounds.yMax; y++)
+                    {
+                        Vector2Int worldPos = new Vector2Int(x, y);
+                        float noiseValue = CalculateFractalNoise(x, y, octaveOffsets, maxPossibleValue);
+                        TerrainType terrainType = GetTerrainType(noiseValue);
+                        
+                        chunkData.SetData(worldPos, terrainType);
+                    }
+                }
+
+                Debug.Log($"[BaseTerrainGenerator] 区块 {chunkCoord} 基础地形生成完成");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[BaseTerrainGenerator] 生成失败：{e.Message}");
+            }
+            finally
+            {
+                onComplete?.Invoke();
+            }
+        }
+
+        /// <summary>
+        /// 清理生成器
+        /// </summary>
+        public void Cleanup()
+        {
+            // 清理逻辑
+        }
+
+        #region 内部计算方法
+        /// <summary>
+        /// 生成每层噪声的偏移
+        /// </summary>
+        private Vector2[] GenerateOctaveOffsets()
+        {
+            Vector2[] offsets = new Vector2[Octaves];
+            for (int i = 0; i < Octaves; i++)
+            {
+                offsets[i] = new Vector2(
+                    Random.Range(-100000f, 100000f),
+                    Random.Range(-100000f, 100000f)
+                );
+            }
+            return offsets;
+        }
+
+        /// <summary>
+        /// 计算噪声最大可能值
+        /// </summary>
+        private float CalculateMaxPossibleValue()
+        {
+            float max = 0;
+            float amplitude = 1;
+            
+            for (int i = 0; i < Octaves; i++)
+            {
+                max += amplitude;
+                amplitude *= AmplitudeGain;
+            }
+            
+            return max;
+        }
+
+        /// <summary>
+        /// 计算多频率叠加噪声
+        /// </summary>
+        private float CalculateFractalNoise(float x, float y, Vector2[] offsets, float maxValue)
+        {
+            float total = 0;
+            float frequency = BaseNoiseScale;
+            float amplitude = 1;
+
+            for (int i = 0; i < Octaves; i++)
+            {
+                float noiseX = (x + offsets[i].x) * frequency;
+                float noiseY = (y + offsets[i].y) * frequency;
+                
+                // 转换为-1~1范围，叠加更自然
+                float perlin = Mathf.PerlinNoise(noiseX, noiseY) * 2 - 1;
+                total += perlin * amplitude;
+
+                frequency *= FrequencyLacunarity;
+                amplitude *= AmplitudeGain;
+            }
+
+            // 归一化到0~1
+            if (NormalizeResult)
+            {
+                total = (total + 1) / 2; // 转换为0~1
+                total /= maxValue;       // 归一化
+            }
+            
+            return Mathf.Clamp01(total);
+        }
+
+        /// <summary>
+        /// 噪声值转换为地形类型
+        /// </summary>
+        private TerrainType GetTerrainType(float noiseValue)
+        {
+            if (noiseValue < WaterThreshold) return TerrainType.Water;
+            if (noiseValue < GrassThreshold) return TerrainType.Grass;
+            if (noiseValue < MountainThreshold) return TerrainType.Mountain;
+            if (noiseValue < RockThreshold) return TerrainType.Rock;
+            
+            return TerrainType.Sand;
+        }
+        #endregion
+    }
+}
+```
+
+## 七、管理器实现
+### 1. 区块管理器（命名空间：MapSystem.Manager）
+```csharp
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Collections;
+using MapSystem.Core;
+using MapSystem.Core.Interfaces;
+using MapSystem.Data;
+using MapSystem.Chunk;
+
+namespace MapSystem.Manager
+{
+    /// <summary>
+    /// 全局区块管理器（单例）
+    /// </summary>
+    public class ChunkManager : MonoBehaviour
+    {
+        [Header("基础配置")]
+        public Transform MapRoot; // 所有区块的父物体
+        public int GlobalSeed = 12345;
+        
+        [Header("生成器配置")]
+        public List<IChunkGenerator> ChunkGenerators;
+
+        // 内部缓存
+        private readonly Dictionary<Vector2Int, IChunk> _loadedChunks = new();
+        private readonly Dictionary<Vector2Int, IChunkData> _generatedData = new();
+        private readonly Queue<Vector2Int> _generationQueue = new();
+        private bool _isGenerating = false;
+
+        // 单例实例
+        public static ChunkManager Instance { get; private set; }
+
+        #region 生命周期
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            
+            Instance = this;
+            MapConstants.GlobalSeed = GlobalSeed;
+            
+            // 初始化生成器
+            InitializeGenerators();
+        }
+
+        private void OnDestroy()
+        {
+            // 清理所有区块
+            foreach (var chunk in _loadedChunks.Values)
+            {
+                chunk.Dispose();
+            }
+            
+            foreach (var data in _generatedData.Values)
+            {
+                data.Dispose();
+            }
+            
+            _loadedChunks.Clear();
+            _generatedData.Clear();
+        }
+        #endregion
+
+        #region 核心API
+        /// <summary>
+        /// 请求加载指定区块
+        /// </summary>
+        public void RequestLoadChunk(Vector2Int chunkCoord)
+        {
+            if (_loadedChunks.ContainsKey(chunkCoord)) return;
+            
+            // 创建区块实例
+            IChunk chunk = new Chunk(chunkCoord);
+            chunk.Initialize(MapRoot);
+            
+            _loadedChunks[chunkCoord] = chunk;
+            chunk.State = ChunkState.Generating;
+            
+            // 加入生成队列
+            if (!_generationQueue.Contains(chunkCoord))
+            {
+                _generationQueue.Enqueue(chunkCoord);
+                StartCoroutine(ProcessGenerationQueue());
+            }
+        }
+
+        /// <summary>
+        /// 请求卸载指定区块
+        /// </summary>
+        public void RequestUnloadChunk(Vector2Int chunkCoord)
+        {
+            if (!_loadedChunks.TryGetValue(chunkCoord, out IChunk chunk)) return;
+            
+            chunk.State = ChunkState.Unloading;
+            
+            // 清理Tilemap，保留数据
+            chunk.ClearTilemaps();
+            chunk.Dispose();
+            
+            _loadedChunks.Remove(chunkCoord);
+            
+            Debug.Log($"[ChunkManager] 区块 {chunkCoord} 已卸载");
+        }
+
+        /// <summary>
+        /// 获取已生成的区块数据
+        /// </summary>
+        public IChunkData GetChunkData(Vector2Int chunkCoord)
+        {
+            _generatedData.TryGetValue(chunkCoord, out IChunkData data);
+            return data;
+        }
+        #endregion
+
+        #region 内部逻辑
+        /// <summary>
+        /// 初始化所有生成器
+        /// </summary>
+        private void InitializeGenerators()
+        {
+            if (ChunkGenerators == null) return;
+            
+            // 按优先级排序
+            ChunkGenerators = ChunkGenerators
+                .OrderByDescending(g => g.Priority)
+                .ToList();
+            
+            // 初始化每个生成器
+            foreach (var generator in ChunkGenerators)
+            {
+                generator.Initialize();
+            }
+        }
+
+        /// <summary>
+        /// 处理生成队列
+        /// </summary>
+        private IEnumerator ProcessGenerationQueue()
+        {
+            if (_isGenerating || _generationQueue.Count == 0) yield break;
+            
+            _isGenerating = true;
+            
+            while (_generationQueue.Count > 0)
+            {
+                Vector2Int chunkCoord = _generationQueue.Dequeue();
+                if (!_loadedChunks.TryGetValue(chunkCoord, out IChunk chunk)) continue;
+                
+                // 创建区块数据
+                IChunkData chunkData = new ChunkData(chunkCoord);
+                chunk.ChunkData = chunkData;
+                _generatedData[chunkCoord] = chunkData;
+
+                // 按优先级执行生成器
+                foreach (var generator in ChunkGenerators)
+                {
+                    if (!generator.IsEnabled) continue;
+                    
+                    // 等待生成器完成
+                    bool isComplete = false;
+                    generator.Generate(chunkData, () => isComplete = true);
+                    
+                    while (!isComplete)
+                    {
+                        yield return null;
+                    }
+                }
+
+                // 标记生成完成
+                chunkData.IsGenerated = true;
+                chunk.State = ChunkState.Loaded;
+                
+                // 绘制区块（通过可视化器）
+                ChunkVisualizer.Instance?.DrawChunk(chunk);
+                
+                yield return null; // 每帧处理一个区块，避免卡顿
+            }
+            
+            _isGenerating = false;
+        }
+        #endregion
+    }
+}
+```
+
+### 2. 区块加载器（命名空间：MapSystem.Manager）
+```csharp
+using UnityEngine;
+using System.Collections.Generic;
+using MapSystem.Core;
+using MapSystem.Core.Interfaces;
+using MapSystem.Chunk;
+
+namespace MapSystem.Manager
+{
+    /// <summary>
+    /// 区块加载器（基于玩家位置动态加载/卸载）
+    /// </summary>
+    public class ChunkLoader : MonoBehaviour
+    {
+        [Header("玩家配置")]
+        public Transform PlayerTransform;
+        
+        [Header("范围配置")]
+        public int LoadRange = MapConstants.LoadRange;
+        public int UnloadRange = MapConstants.UnloadRange;
+
+        // 内部状态
+        private Vector2Int _lastPlayerChunk;
+        private float _checkTimer;
+
+        private void Update()
+        {
+            if (PlayerTransform == null || ChunkManager.Instance == null) return;
+            
+            // 定时检查玩家位置
+            _checkTimer += Time.deltaTime;
+            if (_checkTimer >= MapConstants.ChunkLoadCheckInterval)
+            {
+                _checkTimer = 0;
+                CheckPlayerPosition();
+            }
+        }
+
+        /// <summary>
+        /// 检查玩家位置并触发区块加载/卸载
+        /// </summary>
+        private void CheckPlayerPosition()
+        {
+            // 转换玩家世界坐标为瓦片坐标
+            Vector2 playerWorldPos = PlayerTransform.position;
+            Vector2Int playerTilePos = new Vector2Int(
+                Mathf.RoundToInt(playerWorldPos.x),
+                Mathf.RoundToInt(playerWorldPos.y)
+            );
+            
+            // 转换为区块坐标
+            Vector2Int playerChunk = ChunkCoordinateUtility.WorldToChunkCoord(playerTilePos);
+            
+            // 玩家未移动到新区块，直接返回
+            if (playerChunk == _lastPlayerChunk) return;
+            _lastPlayerChunk = playerChunk;
+
+            // 计算需要加载的区块
+            List<Vector2Int> needLoad = CalculateChunksInRange(playerChunk, LoadRange);
+            // 计算需要卸载的区块
+            List<Vector2Int> needUnload = CalculateChunksToUnload(playerChunk, UnloadRange, needLoad);
+
+            // 执行加载/卸载
+            foreach (var coord in needLoad)
+            {
+                ChunkManager.Instance.RequestLoadChunk(coord);
+            }
+            
+            foreach (var coord in needUnload)
+            {
+                ChunkManager.Instance.RequestUnloadChunk(coord);
+            }
+        }
+
+        /// <summary>
+        /// 计算指定范围内的所有区块
+        /// </summary>
+        private List<Vector2Int> CalculateChunksInRange(Vector2Int center, int range)
+        {
+            List<Vector2Int> chunks = new();
+            
+            for (int x = -range; x <= range; x++)
+            {
+                for (int y = -range; y <= range; y++)
+                {
+                    chunks.Add(new Vector2Int(center.x + x, center.y + y));
+                }
+            }
+            
+            return chunks;
+        }
+
+        /// <summary>
+        /// 计算需要卸载的区块
+        /// </summary>
+        private List<Vector2Int> CalculateChunksToUnload(Vector2Int center, int unloadRange, List<Vector2Int> loadedChunks)
+        {
+            List<Vector2Int> toUnload = new();
+            
+            foreach (var chunkCoord in ChunkManager.Instance._loadedChunks.Keys)
+            {
+                // 不在加载范围内且超出卸载范围
+                if (!loadedChunks.Contains(chunkCoord) && 
+                    (Mathf.Abs(chunkCoord.x - center.x) > unloadRange || 
+                     Mathf.Abs(chunkCoord.y - center.y) > unloadRange))
+                {
+                    toUnload.Add(chunkCoord);
+                }
+            }
+            
+            return toUnload;
+        }
+    }
+}
+```
+
+## 八、可视化实现
+### 1. 区块可视化器（命名空间：MapSystem.Visualizer）
+```csharp
+using UnityEngine;
+using UnityEngine.Tilemaps;
+using System;
+using MapSystem.Core;
+using MapSystem.Core.Interfaces;
+using MapSystem.Chunk;
+
+namespace MapSystem.Visualizer
+{
+    /// <summary>
+    /// 区块可视化器（单例）
+    /// </summary>
+    public class ChunkVisualizer : MonoBehaviour, IChunkVisualizer
+    {
+        [Header("默认瓦片配置")]
+        public RuleTile BaseTerrainDefaultTile;
+        public Tile FineStructureDefaultTile;
+        public Tile DecorationDefaultTile;
+
+        [Header("地形瓦片配置")]
+        public RuleTile WaterTile;
+        public RuleTile GrassTile;
+        public RuleTile MountainTile;
+        public RuleTile RockTile;
+        public RuleTile SandTile;
+
+        [Header("结构瓦片配置")]
+        public Tile HouseTile;
+        public Tile WallTile;
+        public Tile StreamTile;
+
+        [Header("装饰瓦片配置")]
+        public Tile BoatTile;
+        public Tile FlowerTile;
+        public Tile ChestTile;
+
+        // 单例实例
+        public static ChunkVisualizer Instance { get; private set; }
+
+        #region 接口实现
+        public RuleTile BaseTerrainDefaultTile { get => BaseTerrainDefaultTile; set => BaseTerrainDefaultTile = value; }
+        public Tile FineStructureDefaultTile { get => FineStructureDefaultTile; set => FineStructureDefaultTile = value; }
+        public Tile DecorationDefaultTile { get => DecorationDefaultTile; set => DecorationDefaultTile = value; }
+
+        /// <summary>
+        /// 绘制指定区块
+        /// </summary>
+        public void DrawChunk(IChunk chunk)
+        {
+            if (chunk == null || chunk.ChunkData == null || !chunk.ChunkData.IsGenerated)
+            {
+                Debug.LogWarning("[ChunkVisualizer] 区块数据无效，无法绘制");
+                return;
+            }
+
+            try
+            {
+                // 绘制基础地形
+                DrawBaseTerrain(chunk);
+                // 绘制精细结构
+                DrawFineStructure(chunk);
+                // 绘制装饰
+                DrawDecoration(chunk);
+                
+                Debug.Log($"[ChunkVisualizer] 区块 {chunk.ChunkCoord} 绘制完成");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[ChunkVisualizer] 绘制失败：{e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// 清理区块可视化内容
+        /// </summary>
+        public void ClearChunk(IChunk chunk)
+        {
+            if (chunk == null) return;
+            chunk.ClearTilemaps();
+        }
+
+        /// <summary>
+        /// 世界坐标转换为Tilemap坐标
+        /// </summary>
+        public Vector3Int WorldToTilemapPos(Vector2Int worldPos)
+        {
+            return new Vector3Int(worldPos.x, worldPos.y, MapConstants.TilemapZLayer);
+        }
+        #endregion
+
+        #region 生命周期
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+            
+            Instance = this;
+        }
+        #endregion
+
+        #region 绘制逻辑
+        /// <summary>
+        /// 绘制基础地形
+        /// </summary>
+        private void DrawBaseTerrain(IChunk chunk)
+        {
+            var terrainData = chunk.ChunkData.GetAllData<TerrainType>();
+            BoundsInt coreBounds = ChunkCoordinateUtility.GetChunkWorldBounds(chunk.ChunkCoord, false);
+
+            foreach (var kvp in terrainData)
+            {
+                Vector2Int worldPos = kvp.Key;
+                // 仅绘制核心区域（裁剪缓冲区）
+                if (!coreBounds.Contains(new Vector3Int(worldPos.x, worldPos.y, 0))) continue;
+                
+                TerrainType type = kvp.Value;
+                Vector3Int tilePos = WorldToTilemapPos(worldPos);
+                RuleTile tile = GetTerrainTile(type);
+                
+                TilemapUtility.SetTileSafe(chunk.BaseTerrainTilemap, tilePos, tile ?? BaseTerrainDefaultTile);
+            }
+        }
+
+        /// <summary>
+        /// 绘制精细结构
+        /// </summary>
+        private void DrawFineStructure(IChunk chunk)
+        {
+            var structureData = chunk.ChunkData.GetAllData<FineStructureType>();
+            BoundsInt coreBounds = ChunkCoordinateUtility.GetChunkWorldBounds(chunk.ChunkCoord, false);
+
+            foreach (var kvp in structureData)
+            {
+                Vector2Int worldPos = kvp.Key;
+                if (!coreBounds.Contains(new Vector3Int(worldPos.x, worldPos.y, 0))) continue;
+                
+                FineStructureType type = kvp.Value;
+                Vector3Int tilePos = WorldToTilemapPos(worldPos);
+                Tile tile = GetStructureTile(type);
+                
+                TilemapUtility.SetTileSafe(chunk.FineStructureTilemap, tilePos, tile ?? FineStructureDefaultTile);
+            }
+        }
+
+        /// <summary>
+        /// 绘制装饰
+        /// </summary>
+        private void DrawDecoration(IChunk chunk)
+        {
+            var decorationData = chunk.ChunkData.GetAllData<DecorationType>();
+            BoundsInt coreBounds = ChunkCoordinateUtility.GetChunkWorldBounds(chunk.ChunkCoord, false);
+
+            foreach (var kvp in decorationData)
+            {
+                Vector2Int worldPos = kvp.Key;
+                if (!coreBounds.Contains(new Vector3Int(worldPos.x, worldPos.y, 0))) continue;
+                
+                DecorationType type = kvp.Value;
+                Vector3Int tilePos = WorldToTilemapPos(worldPos);
+                Tile tile = GetDecorationTile(type);
+                
+                TilemapUtility.SetTileSafe(chunk.DecorationTilemap, tilePos, tile ?? DecorationDefaultTile);
+            }
+        }
+        #endregion
+
+        #region 瓦片匹配逻辑
+        /// <summary>
+        /// 获取地形对应的瓦片
+        /// </summary>
+        private RuleTile GetTerrainTile(TerrainType type)
+        {
+            return type switch
+            {
+                TerrainType.Water => WaterTile,
+                TerrainType.Grass => GrassTile,
+                TerrainType.Mountain => MountainTile,
+                TerrainType.Rock => RockTile,
+                TerrainType.Sand => SandTile,
+                _ => BaseTerrainDefaultTile
+            };
+        }
+
+        /// <summary>
+        /// 获取结构对应的瓦片
+        /// </summary>
+        private Tile GetStructureTile(FineStructureType type)
+        {
+            return type switch
+            {
+                FineStructureType.House => HouseTile,
+                FineStructureType.Wall => WallTile,
+                FineStructureType.Stream => StreamTile,
+                _ => FineStructureDefaultTile
+            };
+        }
+
+        /// <summary>
+        /// 获取装饰对应的瓦片
+        /// </summary>
+        private Tile GetDecorationTile(DecorationType type)
+        {
+            return type switch
+            {
+                DecorationType.Boat => BoatTile,
+                DecorationType.Flower => FlowerTile,
+                DecorationType.Chest => ChestTile,
+                _ => DecorationDefaultTile
+            };
+        }
+        #endregion
+    }
+}
+```
+
+## 九、类依赖关系总结
+| 类名 | 依赖类/接口 | 被依赖类 | 核心职责 |
+|------|-------------|----------|----------|
+| `ChunkManager` | `IChunk`、`IChunkData`、`IChunkGenerator` | `ChunkLoader`、`ChunkVisualizer` | 全局区块管理、生成队列处理 |
+| `ChunkLoader` | `ChunkManager`、`ChunkCoordinateUtility` | - | 玩家位置跟踪、加载/卸载触发 |
+| `Chunk` | `IChunk`、`TilemapUtility` | `ChunkManager` | 区块实例封装、Tilemap管理 |
+| `ChunkData` | `IChunkData`、`ChunkCoordinateUtility` | `Chunk`、`IChunkGenerator` | 区块数据存储、线程安全存取 |
+| `BaseTerrainGenerator` | `IChunkGenerator`、`ChunkData`、`ChunkCoordinateUtility` | `ChunkManager` | 基础地形生成、噪声计算 |
+| `ChunkVisualizer` | `IChunkVisualizer`、`IChunk`、`TilemapUtility` | `ChunkManager` | 区块绘制、瓦片匹配、默认兜底 |
+| `ChunkCoordinateUtility` | `MapConstants` | 所有区块相关类 | 坐标转换、种子生成 |
+| `TilemapUtility` | - | `Chunk`、`ChunkVisualizer` | Tilemap操作、安全检查 |
+
+## 十、核心功能验证要点
+1. **区块连续性**：验证相邻区块的地形边缘是否自然衔接，无断层；
+2. **生成可复现性**：相同种子下，同一区块生成结果一致；
+3. **动态加载**：玩家移动时，新区块自动生成，远离的区块自动卸载；
+4. **默认瓦片兜底**：未配置的地形类型自动使用默认瓦片；
+5. **线程安全**：多区块同时生成时无数据竞争；
+6. **性能**：大地图生成时主线程无明显卡顿。
+
+该系统完全基于接口抽象设计，可灵活扩展新的生成器（如平滑生成器、装饰生成器），且所有模块解耦，便于维护和测试。

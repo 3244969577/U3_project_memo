@@ -7,7 +7,12 @@ namespace Cainos.PixelArtTopDown_Basic
     //let camera follow target
     public class CameraFollow : MonoBehaviour
     {
-        public Transform target;
+        // 依赖
+        public Transform crosshair; // 十字准星
+        public Transform player;      // 玩家目标
+
+
+        private Transform target;    // 跟随目标
         public float lerpSpeed = 1.0f;
 
         private Vector3 offset;
@@ -16,8 +21,9 @@ namespace Cainos.PixelArtTopDown_Basic
 
         private void Start()
         {
+            target = player;
             if (target == null) return;
-            offset = transform.position - target.position;
+            // offset = transform.position - target.position;
         }
 
         private void Update()
@@ -25,17 +31,17 @@ namespace Cainos.PixelArtTopDown_Basic
 
             if (Input.GetKeyDown(KeyCode.Tab))
             {
-                target = GameObject.FindGameObjectWithTag("Crosshair").transform;
+                target = crosshair;
             }
             else if (Input.GetKeyUp(KeyCode.Tab))
             {
-                // 获取玩家目标
-                target = GameObject.FindGameObjectWithTag("Player").transform;
+                target = player;
             }
 
             if (target == null) return;
 
-            targetPos = target.position + offset;
+            targetPos = target.position;
+            targetPos.z = transform.position.z;
             transform.position = Vector3.Lerp(transform.position, targetPos, lerpSpeed * Time.deltaTime);
 
         }
