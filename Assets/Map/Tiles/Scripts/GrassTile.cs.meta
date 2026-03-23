@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 2a7b6df3bdbe1e64bb515ea15cce856f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_DefaultSprite: {instanceID: 0}
+  - m_DefaultGameObject: {instanceID: 0}
+  - mountainTile: {fileID: 11400000, guid: b9b15bb87b7c95c40b12977d29521c7a, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

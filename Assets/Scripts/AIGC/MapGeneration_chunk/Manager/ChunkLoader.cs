@@ -14,12 +14,14 @@ public class ChunkLoader : MonoBehaviour
     [Header("范围配置")]
     public float LoadBuffer = 1.5f; // 加载缓冲系数，大于1表示在视野外提前加载
     public int UnloadRange = 3; // 卸载范围
+    public int MaxConcurrentLoads = 2; // 最大同时加载数量
 
     // 内部状态
     private Bounds _lastCameraBounds;
     private float _checkTimer;
-    private Queue<Vector2Int> _loadQueue = new Queue<Vector2Int>();
-    private bool _isLoading = false;
+    private List<Vector2Int> _loadQueue = new List<Vector2Int>(); // 使用List以便排序
+    private int _currentLoads = 0;
+    private HashSet<Vector2Int> _loadingChunks = new HashSet<Vector2Int>(); // 正在加载的区块
 
     private void Update()
     {
@@ -33,10 +35,14 @@ public class ChunkLoader : MonoBehaviour
             CheckCameraBounds();
         }
         
-        // 处理加载队列
-        if (!_isLoading && _loadQueue.Count > 0)
+        // 处理加载队列，控制并发数量
+        while (_currentLoads < MaxConcurrentLoads && _loadQueue.Count > 0)
         {
-            StartCoroutine(ProcessLoadQueue());
+            Vector2Int coord = _loadQueue[0];
+            _loadQueue.RemoveAt(0);
+            _loadingChunks.Add(coord);
+            _currentLoads++;
+            StartCoroutine(LoadChunk(coord));
         }
     }
 
@@ -64,11 +70,23 @@ public class ChunkLoader : MonoBehaviour
         // 计算需要卸载的区块
         List<Vector2Int> needUnload = CalculateChunksToUnload(cameraBounds, visibleChunks);
 
-        // 将需要加载的区块加入队列
+        // 将需要加载的区块加入队列，并按距离相机的远近排序
         foreach (var coord in needLoad)
         {
-            _loadQueue.Enqueue(coord);
+            if (!_loadQueue.Contains(coord) && !_loadingChunks.Contains(coord))
+            {
+                _loadQueue.Add(coord);
+            }
         }
+        
+        // 按距离相机的远近排序，优先加载近的区块
+        _loadQueue.Sort((a, b) => {
+            Vector2 centerA = ChunkCoordinateUtility.ChunkToWorldCoord(a, new Vector2Int(MapConstants.ChunkSize / 2, MapConstants.ChunkSize / 2));
+            Vector2 centerB = ChunkCoordinateUtility.ChunkToWorldCoord(b, new Vector2Int(MapConstants.ChunkSize / 2, MapConstants.ChunkSize / 2));
+            float distanceA = Vector2.Distance(centerA, MainCamera.transform.position);
+            float distanceB = Vector2.Distance(centerB, MainCamera.transform.position);
+            return distanceA.CompareTo(distanceB);
+        });
         
         // 执行卸载
         foreach (var coord in needUnload)
@@ -125,21 +143,35 @@ public class ChunkLoader : MonoBehaviour
     }
 
     /// <summary>
-    /// 处理加载队列，尽可能加载所有能够加载的区块
+    /// 加载单个区块
     /// </summary>
-    private IEnumerator ProcessLoadQueue()
+    private IEnumerator LoadChunk(Vector2Int coord)
     {
-        _isLoading = true;
-        
-        // 处理所有队列中的区块
-        while (_loadQueue.Count > 0)
+        // 检查区块是否已经加载
+        if (ChunkManager.Instance.GeneratedChunkCoords.Contains(coord))
         {
-            Vector2Int coord = _loadQueue.Dequeue();
-            ChunkManager.Instance.RequestLoadChunk(coord);
-            yield return new WaitForSeconds(0.05f); // 稍微延迟，避免一次性生成过多
+            _loadingChunks.Remove(coord);
+            _currentLoads--;
+            yield break;
         }
         
-        _isLoading = false;
+        // 加载区块
+        ChunkManager.Instance.RequestLoadChunk(coord);
+        
+        // 等待区块加载完成
+        // 这里使用循环检查区块是否已加载
+        float waitTime = 0f;
+        float maxWaitTime = 5f; // 最大等待时间
+        
+        while (!ChunkManager.Instance.GeneratedChunkCoords.Contains(coord) && waitTime < maxWaitTime)
+        {
+            yield return new WaitForSeconds(0.1f);
+            waitTime += 0.1f;
+        }
+        
+        // 更新加载状态
+        _loadingChunks.Remove(coord);
+        _currentLoads--;
     }
 
     /// <summary>

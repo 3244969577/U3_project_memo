@@ -63,7 +63,21 @@ public static class TilemapUtility
             collider = tilemap.gameObject.AddComponent<TilemapCollider2D>();
         }
         
+        // 启用复合碰撞箱以提高性能
+        collider.usedByComposite = true;
+        
+        // 添加CompositeCollider2D
+        if (!tilemap.gameObject.TryGetComponent<CompositeCollider2D>(out CompositeCollider2D compositeCollider))
+        {
+            compositeCollider = tilemap.gameObject.AddComponent<CompositeCollider2D>();
+        }
+        
+        // 配置CompositeCollider2D
+        compositeCollider.geometryType = CompositeCollider2D.GeometryType.Polygons;
+        compositeCollider.generationType = CompositeCollider2D.GenerationType.Synchronous;
+        
         // 启用碰撞器
         collider.enabled = true;
+        compositeCollider.enabled = true;
     }
 }

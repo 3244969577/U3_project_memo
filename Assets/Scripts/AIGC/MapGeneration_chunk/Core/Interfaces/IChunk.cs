@@ -27,10 +27,7 @@ public interface IChunk : IDisposable
     /// </summary>
     Tilemap BaseTerrainTilemap { get; }
     
-    /// <summary>
-    /// 障碍物Tilemap（不可通行，带碰撞）
-    /// </summary>
-    Tilemap ObstacleTilemap { get; }
+    
     
     /// <summary>
     /// 精细结构Tilemap

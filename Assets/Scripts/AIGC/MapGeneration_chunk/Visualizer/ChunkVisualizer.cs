@@ -117,9 +117,9 @@ public class ChunkVisualizer : MonoBehaviour, IChunkVisualizer
     /// </summary>
     private void DrawBaseTerrain(IChunkData chunkData)
     {
-        if (TilemapManager.Instance.BaseTerrainTilemap == null || TilemapManager.Instance.ObstacleTilemap == null)
+        if (TilemapManager.Instance.BaseTerrainTilemap == null)
         {
-            Debug.LogError("[ChunkVisualizer] BaseTerrainTilemap or ObstacleTilemap not assigned in TilemapManager");
+            Debug.LogError("[ChunkVisualizer] BaseTerrainTilemap not assigned in TilemapManager");
             return;
         }
         
@@ -136,10 +136,8 @@ public class ChunkVisualizer : MonoBehaviour, IChunkVisualizer
             Vector3Int tilePos = WorldToTilemapPos(worldPos);
             TileBase tile = GetTerrainTile(type);
             
-            // 根据地形类型选择Tilemap层
-            Tilemap targetTilemap = IsPassableTerrain(type) ? 
-                TilemapManager.Instance.BaseTerrainTilemap : 
-                TilemapManager.Instance.ObstacleTilemap;
+            // 所有地形都绘制到BaseTerrainTilemap上
+            Tilemap targetTilemap = TilemapManager.Instance.BaseTerrainTilemap;
             
             TilemapUtility.SetTileSafe(targetTilemap, tilePos, tile ?? BaseTerrainDefaultTile);
         }

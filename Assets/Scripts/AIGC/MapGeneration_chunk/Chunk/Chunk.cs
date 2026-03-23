@@ -14,7 +14,6 @@ public class Chunk : IChunk
     
     // Tilemap引用（使用全局Tilemap）
     public Tilemap BaseTerrainTilemap { get { return TilemapManager.Instance?.BaseTerrainTilemap; } }
-    public Tilemap ObstacleTilemap { get { return TilemapManager.Instance?.ObstacleTilemap; } }
     public Tilemap FineStructureTilemap { get { return TilemapManager.Instance?.FineStructureTilemap; } }
     public Tilemap DecorationTilemap { get { return TilemapManager.Instance?.DecorationTilemap; } }
     

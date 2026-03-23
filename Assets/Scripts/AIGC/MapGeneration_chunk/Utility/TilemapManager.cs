@@ -8,8 +8,7 @@ using UnityEngine.Tilemaps;
 public class TilemapManager : MonoBehaviour
 {
     [Header("全局Tilemap配置")]
-    public Tilemap BaseTerrainTilemap; // 可通行地形
-    public Tilemap ObstacleTilemap; // 不可通行地形（带碰撞）
+    public Tilemap BaseTerrainTilemap; // 所有地形
     public Tilemap FineStructureTilemap;
     public Tilemap DecorationTilemap;
 
@@ -51,11 +50,7 @@ public class TilemapManager : MonoBehaviour
     /// </summary>
     private void EnsureTilemapsInitialized()
     {
-        // 只为障碍物层添加碰撞体
-        if (ObstacleTilemap != null)
-        {
-            TilemapUtility.AddCollisionToTilemap(ObstacleTilemap);
-        }
+        // 所有地形都不需要碰撞箱
     }
     
     /// <summary>
@@ -64,7 +59,6 @@ public class TilemapManager : MonoBehaviour
     public void ClearAllTilemaps()
     {
         TilemapUtility.ClearTilemapSafe(BaseTerrainTilemap);
-        TilemapUtility.ClearTilemapSafe(ObstacleTilemap);
         TilemapUtility.ClearTilemapSafe(FineStructureTilemap);
         TilemapUtility.ClearTilemapSafe(DecorationTilemap);
     }
