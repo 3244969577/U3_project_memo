@@ -2,16 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Fungus;
 
 public class GameManager : MonoBehaviour
-/*
- * Singleton Design Pattern
- */
 {
+    public GameObject player;
+    public GameObject crosshair;
     public GameObject gameOverUI;
     public GameObject gameWinUI;
 
+    private GameObject NPCInteracting;  // 正在与Player对话的NPC
+
     public static GameManager instance;
+    public static GameManager Instance => instance;
+
+    public Flowchart flowchart; 
 
     private void Awake()
     {
@@ -20,11 +25,10 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
         instance = this;
+        Debug.Assert(instance != null, "GameManager instance is null");
         DontDestroyOnLoad(gameObject);
     }
-
-    [HideInInspector]
-    public Player player = Player.instance;
+    
     public FloatingTextManager floatingTextManager;
     [HideInInspector]
     public float playerHealth;
@@ -39,17 +43,38 @@ public class GameManager : MonoBehaviour
 
     public void SetPlayerSkin(Sprite sprite)
     {
-        player.spriteRenderer.sprite = sprite;
+        if (player != null)
+        {
+            Player playerComponent = player.GetComponent<Player>();
+            if (playerComponent != null && playerComponent.spriteRenderer != null)
+            {
+                playerComponent.spriteRenderer.sprite = sprite;
+            }
+        }
     }
 
     public void FreezeAllMovement()
     {
-        player.FreezeMovement();
+        if (player != null)
+        {
+            Player playerComponent = player.GetComponent<Player>();
+            if (playerComponent != null)
+            {
+                playerComponent.FreezeMovement();
+            }
+        }
     }
 
     public void UnFreezeAllMovement()
     {
-        player.UnFreezeMovement();
+        if (player != null)
+        {
+            Player playerComponent = player.GetComponent<Player>();
+            if (playerComponent != null)
+            {
+                playerComponent.UnFreezeMovement();
+            }
+        }
     }
 
     public int GetCoin()
@@ -57,7 +82,6 @@ public class GameManager : MonoBehaviour
         return this.coin;
     }
 
-    // Save game state
     public void SaveState()
     {
         Debug.Log("Save state");
@@ -69,13 +93,11 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetString("SaveState", s);
     }
 
-    // Load game state
     public void LoadState()
     {
         Debug.Log("Load state");
     }
 
-    // Floating text
     public FloatingText ShowText(string msg, int fontSize, Color color, Vector3 position, Vector3 motion, float duration)
     {
         return floatingTextManager.Show(msg, fontSize, color, position, motion, duration);
@@ -83,13 +105,20 @@ public class GameManager : MonoBehaviour
 
     public void RetryScene()
     {
-        player.GetComponent<Collider2D>().enabled = false;
+        if (player != null)
+        {
+            player.GetComponent<Collider2D>().enabled = false;
+        }
         this.FreezeAllMovement();
         gameOverUI.SetActive(true);
     }
+    
     public void WinScene()
     {
-        player.GetComponent<Collider2D>().enabled = false;
+        if (player != null)
+        {
+            player.GetComponent<Collider2D>().enabled = false;
+        }
         this.FreezeAllMovement();
         gameWinUI.SetActive(true);
     }
@@ -112,4 +141,14 @@ public class GameManager : MonoBehaviour
                 break;
         }
     }
+
+    public void SetNPCInteracting(GameObject npc)
+    {
+        NPCInteracting = npc;
+    }
+    public GameObject GetNPCInteracting()
+    {
+        return NPCInteracting;
+    }
+    
 }

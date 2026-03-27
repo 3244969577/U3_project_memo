@@ -96,12 +96,24 @@ public abstract class PrefabGeneratorBase : GeneratorBase
                     if (UnityEngine.Random.value > SpawnProbability) continue;
                     Debug.Log($"概率命中, 位置 {worldPos}");
                     
-                    // 获取预制体并实例化
+                    // 获取预制体并从对象池获取实例
                     GameObject prefab = GetPrefabToSpawn(worldPos, chunkData);
                     if (prefab != null)
                     {
                         Vector3 spawnPos = new Vector3(worldPos.x + 0.5f, worldPos.y + 0.5f, 0);
-                        GameObject instance = GameObject.Instantiate(prefab, spawnPos, Quaternion.identity);
+                        GameObject instance;
+                        
+                        // 使用对象池获取对象
+                        if (ObjectPoolManager.Instance != null)
+                        {
+                            instance = ObjectPoolManager.Instance.GetObject(prefab, spawnPos, Quaternion.identity);
+                        }
+                        else
+                        {
+                            // 如果对象池不可用，使用传统实例化
+                            instance = GameObject.Instantiate(prefab, spawnPos, Quaternion.identity);
+                        }
+                        
                         instance.name = $"{prefab.name}_{worldPos.x}_{worldPos.y}";
                         
                         // 设置父对象为手动指定的父对象

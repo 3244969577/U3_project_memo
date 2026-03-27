@@ -126,7 +126,17 @@ public class ChunkManager : MonoBehaviour
             // 检查对象是否在区块范围内
             if (bounds.Contains(new Vector3Int(Mathf.FloorToInt(pos.x), Mathf.FloorToInt(pos.y), 0)))
             {
-                GameObject.Destroy(child.gameObject);
+                // 使用对象池回收对象
+                if (ObjectPoolManager.Instance != null)
+                {
+                    ObjectPoolManager.Instance.ReturnObject(child.gameObject);
+                }
+                else
+                {
+                    Debug.LogWarning($"[ChunkManager] 未找到对象池实例，无法回收对象 {child.gameObject.name}");
+                    // 如果对象池不可用，使用传统销毁
+                    GameObject.Destroy(child.gameObject);
+                }
             }
             else if (child.childCount > 0)
             {

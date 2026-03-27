@@ -36,7 +36,7 @@ public class ChunkLoader : MonoBehaviour
         }
         
         // 处理加载队列，控制并发数量
-        while (_currentLoads < MaxConcurrentLoads && _loadQueue.Count > 0)
+        if (_currentLoads < MaxConcurrentLoads && _loadQueue.Count > 0)
         {
             Vector2Int coord = _loadQueue[0];
             _loadQueue.RemoveAt(0);

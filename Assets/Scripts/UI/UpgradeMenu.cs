@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+
 public class UpgradeMenu : MonoBehaviour
 {
     private int upgradeFactor = 1;
@@ -26,18 +27,28 @@ public class UpgradeMenu : MonoBehaviour
         speedTransform = frameTransform.Find("Attributes").Find("SpeedAttribute").Find("SpeedAmount");
         healthText = healthTransform.gameObject.GetComponent<Text>();
         speedText = speedTransform.gameObject.GetComponent<Text>();
-        player = GameManager.instance.player;
+        
+        if (GameManager.instance.player != null)
+        {
+            player = GameManager.instance.player.GetComponent<Player>();
+        }
+        
         UpdateValues();
     }
 
     private void UpdateValues()
     {
-        healthText.text = "HEALTH: " + ((int)player.GetMaxHealth()).ToString();
-        speedText.text = "SPEED: " + ((int)player.speed).ToString();
+        if (player != null)
+        {
+            healthText.text = "HEALTH: " + ((int)player.GetMaxHealth()).ToString();
+            speedText.text = "SPEED: " + ((int)player.speed).ToString();
+        }
     }
+    
     public void UpgradeHealth()
     {
-
+        if (player == null) return;
+        
         int coin = GameManager.instance.GetCoin();
         if (coin >= HEALTH_UPGRADE_PRICE)
         {
@@ -46,8 +57,11 @@ public class UpgradeMenu : MonoBehaviour
             UpdateValues();
         }
     }
+    
     public void UpgradeSpeed()
     {
+        if (player == null) return;
+        
         int coin = GameManager.instance.GetCoin();
         if (coin >= SPEED_UPGRADE_PRICE)
         {

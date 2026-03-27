@@ -5,7 +5,7 @@ using System;
 /// 生成器基类（继承MonoBehaviour）
 /// </summary>
 public abstract class GeneratorBase : MonoBehaviour, IChunkGenerator
-{
+{ 
     [Header("基础配置")]
     public bool isEnabled = true;
 

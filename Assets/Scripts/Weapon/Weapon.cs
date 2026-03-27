@@ -67,6 +67,7 @@ public abstract class Weapon : Collectible
     {
         if (collision.gameObject.name.Equals("Player"))
         {
+            Debug.Log("武器被玩家拾取");
             Player player = collision.GetComponent<Player>();
             this.Attach(player);
             player.EquipWeapon(this);

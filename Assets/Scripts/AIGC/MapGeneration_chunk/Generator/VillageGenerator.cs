@@ -131,8 +131,8 @@ public class VillageGenerator : GeneratorBase
         // 计算村庄边界
         BoundsInt villageBounds = GetVillageBounds(basePoint);
         
-        // 存储已尝试的位置
-        List<Vector2Int> triedPositions = new List<Vector2Int>();
+        // 存储已成功生成房屋的位置
+        List<Vector2Int> spawnedHouses = new List<Vector2Int>();
         int successfulAttempts = 0;
         int maxAttempts = MaxHouses * 2; // 尝试次数为最大房屋数的2倍
         
@@ -142,9 +142,8 @@ public class VillageGenerator : GeneratorBase
             // 在村庄区域内随机选择一个点
             Vector2Int randomPos = GetRandomPointInBounds(villageBounds);
             
-            // 检查是否已尝试过
-            if (triedPositions.Contains(randomPos)) continue;
-            triedPositions.Add(randomPos);
+            // 检查是否已生成
+            if (spawnedHouses.Contains(randomPos)) continue;
             
             // 检查地形类型是否适合
             TerrainType terrain = chunkData.GetData<TerrainType>(randomPos);
@@ -153,9 +152,9 @@ public class VillageGenerator : GeneratorBase
                 continue;
             }
             
-            // 检查与其他房屋的距离
+            // 检查与已生成房屋的距离
             bool tooClose = false;
-            foreach (var pos in triedPositions)
+            foreach (var pos in spawnedHouses)
             {
                 if (Vector2.Distance(randomPos, pos) < MinHouseDistance)
                 {
@@ -166,6 +165,7 @@ public class VillageGenerator : GeneratorBase
             if (tooClose) continue;
             
             // 尝试成功
+            spawnedHouses.Add(randomPos);
             successfulAttempts++;
             if (successfulAttempts >= MaxHouses / 2) // 至少能生成一半的房屋
             {

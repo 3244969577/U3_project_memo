@@ -17,12 +17,10 @@ using System.Collections;
 public class Player : Character
 {
 
-	private PlayerMove playerMove;
-
 	const string TAG = "Player";      // 玩家标签
 	const string DEATH_ANIM = "onDeath";      // 死亡动画名称
 
-	// private Vector2 movement;      // 移动方向
+	private Vector2 movement;      // 移动方向
 	private Weapon weapon;      // 当前装备的武器
 
 	public UI_Inventory uiInventory;      // 背包UI引用
@@ -38,10 +36,6 @@ public class Player : Character
 	/// </summary>
 	private void Awake()
 	{
-		playerMove = GetComponentInChildren<PlayerMove>();
-
-
-
 		if (Player.instance != null)
 		{
 			Destroy(gameObject);
@@ -69,10 +63,8 @@ public class Player : Character
 	protected override void Update()
 	{
 		base.Update();
-		// this.movement.x = Input.GetAxisRaw("Horizontal");
-		// this.movement.y = Input.GetAxisRaw("Vertical");
-		Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-		this.UpdatePlayerRotation(mousePosition);
+		this.movement.x = Input.GetAxisRaw("Horizontal");
+		this.movement.y = Input.GetAxisRaw("Vertical");
 		if (this.moveAble)
 		{
 			this.Move();
@@ -137,10 +129,16 @@ public class Player : Character
 	/// 移动玩家
 	/// - 根据输入的移动方向和玩家速度更新玩家位置
 	/// - 使用物理刚体的MovePosition方法确保平滑移动
+	/// - 更新玩家朝向
 	/// </summary>
 	protected override void Move()
 	{
-		// this.rb.MovePosition(rb.position + movement * speed * Time.fixedDeltaTime);
+		// 移动玩家
+		this.rb.MovePosition(rb.position + movement * speed * Time.fixedDeltaTime);
+		
+		// 更新玩家朝向
+		Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+		this.UpdatePlayerRotation(mousePosition);
 	}
 
 	/// <summary>
@@ -195,5 +193,14 @@ public class Player : Character
 
 		if (item != null)
 			this.EquipWeapon((Weapon)item);
+	}
+
+	/// <summary>
+	/// 设置玩家是否可移动
+	/// </summary>
+	/// <param name="moveable">是否可移动</param>
+	public void SetMoveable(bool moveable)
+	{
+		this.moveAble = moveable;
 	}
 }

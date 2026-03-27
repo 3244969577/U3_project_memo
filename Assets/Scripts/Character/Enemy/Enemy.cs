@@ -1,4 +1,4 @@
-﻿﻿using UnityEngine;
+﻿﻿﻿﻿﻿﻿﻿﻿using UnityEngine;
 using System.Collections;
 
 /// <summary>
@@ -93,12 +93,6 @@ public class Enemy : Character
 			
 			if (Time.time > this.attackRate + this.lastAttack)
 			{
-				Vector3 playerPosition = target.transform.position;
-				Vector3 direction = (playerPosition - transform.position).normalized;
-
-				// Add force to player
-				target.GetComponent<Rigidbody2D>().AddForce(direction * this.pushForce);
-
 				target.GetDamaged(this.damage);
 
 				// Print damage

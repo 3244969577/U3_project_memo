@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// 敌人AI系统 - 控制敌人的行为状态
-/// - 实现敌人的巡逻、追逐和攻击逻辑
+/// - 定现敌人的巡逻、追逐和攻击逻辑
 /// - 使用状态机管理敌人的不同行为状态
 /// </summary>
 public class EnemyAI : MonoBehaviour
@@ -91,7 +91,9 @@ public class EnemyAI : MonoBehaviour
 
     protected virtual void Update()
     {
-        Player target = GameManager.instance.player;
+        Player target = GetPlayerTarget();
+        if (target == null) return;
+        
         this.currentState = GetCurrentState(target);
         switch (this.currentState)
         {
@@ -109,6 +111,14 @@ public class EnemyAI : MonoBehaviour
         }
         
     }
+    
+    private Player GetPlayerTarget()
+    {
+        if (GameManager.instance == null || GameManager.instance.player == null)
+            return null;
+        
+        return GameManager.instance.player.GetComponent<Player>();
+    }
 
     private State GetCurrentState(Player player)
     {
@@ -124,7 +134,6 @@ public class EnemyAI : MonoBehaviour
 
     private Vector2 GetRoamingPosition()
     {
-        // Generate random normalized direction
         timer = Time.time;
         Vector2 randomDirection = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)).normalized;
         return startPosition + randomDirection * Random.Range(RoamingRange, RoamingRange);

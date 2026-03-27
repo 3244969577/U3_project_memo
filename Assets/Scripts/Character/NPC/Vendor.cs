@@ -20,12 +20,37 @@ public class Vendor : NPC
     /// - 用于显示和管理商店界面
     /// </summary>
     public UpgradeMenu upgradeMenu;
+    
+    /// <summary>
+    /// 是否可交互
+    /// </summary>
+    private bool isInteractable = false;
+
+    protected void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            this.isInteractable = true;
+            // 与玩家互动时进入站立状态
+            ForceStandingState();
+        }
+    }
+
+    protected void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            this.isInteractable = false;
+        }
+    }
 
     protected override void Update()
     {
+        base.Update();
+        
         if (Input.GetKeyDown("space"))
         {
-            if (this.interacble)
+            if (this.isInteractable)
             {
                 Shopping();
             }
@@ -35,6 +60,5 @@ public class Vendor : NPC
     protected void Shopping()
     {
         upgradeMenu.Toggle();
-        
     }
 }

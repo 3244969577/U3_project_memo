@@ -55,6 +55,10 @@ public class UI_Inventory : MonoBehaviour
         float itemSlotCellSize = 125f;
         foreach(Collectible item in this.inventory.GetItemList())
         {
+            // 1. 实例化一个物品槽位
+            // 2. 设置物品槽位的位置
+            // 3. 设置物品槽位的图片为物品的图片
+            // 4. 增加物品槽位的索引
             RectTransform itemSlotRectTransform = Instantiate(itemSlotTemplate, itemSlotContainer).GetComponent<RectTransform>();
             itemSlotRectTransform.gameObject.SetActive(true);
             itemSlotRectTransform.anchoredPosition = new Vector2(x * itemSlotCellSize, y * itemSlotCellSize);

@@ -1139,8 +1139,11 @@ public void SpawnDecorationGameObjects(MapGeneratorData data)
 <br />
 
 # 区块地图生成方案
+
 # 从零构建无限区块地形生成系统（完整接口化实现）
+
 ## 一、系统文件结构（按功能模块划分）
+
 ```
 Assets/
 ├── Scripts/
@@ -1171,7 +1174,9 @@ Assets/
 ```
 
 ## 二、核心抽象层（接口+基础定义）
+
 ### 1. 基础枚举与常量（命名空间：MapSystem.Core）
+
 ```csharp
 using UnityEngine;
 
@@ -1240,6 +1245,7 @@ namespace MapSystem.Core
 ```
 
 ### 2. 核心接口定义（命名空间：MapSystem.Core.Interfaces）
+
 ```csharp
 using UnityEngine;
 using System;
@@ -1408,7 +1414,9 @@ namespace MapSystem.Core.Interfaces
 ```
 
 ## 三、核心工具类实现
+
 ### 1. 区块坐标工具（命名空间：MapSystem.Chunk）
+
 ```csharp
 using UnityEngine;
 using MapSystem.Core;
@@ -1482,6 +1490,7 @@ namespace MapSystem.Chunk
 ```
 
 ### 2. Tilemap工具类（命名空间：MapSystem.Visualizer）
+
 ```csharp
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -1555,7 +1564,9 @@ namespace MapSystem.Visualizer
 ```
 
 ## 四、数据层实现
+
 ### 1. 区块数据实现（命名空间：MapSystem.Data）
+
 ```csharp
 using UnityEngine;
 using System;
@@ -1691,7 +1702,9 @@ namespace MapSystem.Data
 ```
 
 ## 五、区块核心实现
+
 ### 1. 区块具体实现（命名空间：MapSystem.Chunk）
+
 ```csharp
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -1783,7 +1796,9 @@ namespace MapSystem.Chunk
 ```
 
 ## 六、生成器实现
+
 ### 1. 基础地形生成器（命名空间：MapSystem.Generator）
+
 ```csharp
 using UnityEngine;
 using System;
@@ -1978,7 +1993,9 @@ namespace MapSystem.Generator
 ```
 
 ## 七、管理器实现
+
 ### 1. 区块管理器（命名空间：MapSystem.Manager）
+
 ```csharp
 using UnityEngine;
 using System;
@@ -2170,6 +2187,7 @@ namespace MapSystem.Manager
 ```
 
 ### 2. 区块加载器（命名空间：MapSystem.Manager）
+
 ```csharp
 using UnityEngine;
 using System.Collections.Generic;
@@ -2287,7 +2305,9 @@ namespace MapSystem.Manager
 ```
 
 ## 八、可视化实现
+
 ### 1. 区块可视化器（命名空间：MapSystem.Visualizer）
+
 ```csharp
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -2508,18 +2528,20 @@ namespace MapSystem.Visualizer
 ```
 
 ## 九、类依赖关系总结
-| 类名 | 依赖类/接口 | 被依赖类 | 核心职责 |
-|------|-------------|----------|----------|
-| `ChunkManager` | `IChunk`、`IChunkData`、`IChunkGenerator` | `ChunkLoader`、`ChunkVisualizer` | 全局区块管理、生成队列处理 |
-| `ChunkLoader` | `ChunkManager`、`ChunkCoordinateUtility` | - | 玩家位置跟踪、加载/卸载触发 |
-| `Chunk` | `IChunk`、`TilemapUtility` | `ChunkManager` | 区块实例封装、Tilemap管理 |
-| `ChunkData` | `IChunkData`、`ChunkCoordinateUtility` | `Chunk`、`IChunkGenerator` | 区块数据存储、线程安全存取 |
-| `BaseTerrainGenerator` | `IChunkGenerator`、`ChunkData`、`ChunkCoordinateUtility` | `ChunkManager` | 基础地形生成、噪声计算 |
-| `ChunkVisualizer` | `IChunkVisualizer`、`IChunk`、`TilemapUtility` | `ChunkManager` | 区块绘制、瓦片匹配、默认兜底 |
-| `ChunkCoordinateUtility` | `MapConstants` | 所有区块相关类 | 坐标转换、种子生成 |
-| `TilemapUtility` | - | `Chunk`、`ChunkVisualizer` | Tilemap操作、安全检查 |
+
+| 类名                       | 依赖类/接口                                                 | 被依赖类                            | 核心职责             |
+| ------------------------ | ------------------------------------------------------ | ------------------------------- | ---------------- |
+| `ChunkManager`           | `IChunk`、`IChunkData`、`IChunkGenerator`                | `ChunkLoader`、`ChunkVisualizer` | 全局区块管理、生成队列处理    |
+| `ChunkLoader`            | `ChunkManager`、`ChunkCoordinateUtility`                | -                               | 玩家位置跟踪、加载/卸载触发   |
+| `Chunk`                  | `IChunk`、`TilemapUtility`                              | `ChunkManager`                  | 区块实例封装、Tilemap管理 |
+| `ChunkData`              | `IChunkData`、`ChunkCoordinateUtility`                  | `Chunk`、`IChunkGenerator`       | 区块数据存储、线程安全存取    |
+| `BaseTerrainGenerator`   | `IChunkGenerator`、`ChunkData`、`ChunkCoordinateUtility` | `ChunkManager`                  | 基础地形生成、噪声计算      |
+| `ChunkVisualizer`        | `IChunkVisualizer`、`IChunk`、`TilemapUtility`           | `ChunkManager`                  | 区块绘制、瓦片匹配、默认兜底   |
+| `ChunkCoordinateUtility` | `MapConstants`                                         | 所有区块相关类                         | 坐标转换、种子生成        |
+| `TilemapUtility`         | -                                                      | `Chunk`、`ChunkVisualizer`       | Tilemap操作、安全检查   |
 
 ## 十、核心功能验证要点
+
 1. **区块连续性**：验证相邻区块的地形边缘是否自然衔接，无断层；
 2. **生成可复现性**：相同种子下，同一区块生成结果一致；
 3. **动态加载**：玩家移动时，新区块自动生成，远离的区块自动卸载；
@@ -2528,3 +2550,432 @@ namespace MapSystem.Visualizer
 6. **性能**：大地图生成时主线程无明显卡顿。
 
 该系统完全基于接口抽象设计，可灵活扩展新的生成器（如平滑生成器、装饰生成器），且所有模块解耦，便于维护和测试。
+
+<br />
+
+<br />
+
+<br />
+
+## 要在Unity中基于豆包API实现具备**性格设定、对话记忆、智能回复**的NPC模块，你可以按照以下7个步骤逐步落地，全程会兼顾功能实现、性能优化和安全规范：
+
+## 📋 第一步：前期准备（API权限 + Unity环境配置）
+
+### 1.1 申请豆包API权限
+
+目前豆包API通过「豆包开放平台」对外提供，对个人开发者非常友好：
+
+1. 打开[豆包开放平台](https://open.doubao.com/)，注册账号并完成实名认证
+2. 进入「控制台」-「API密钥管理」，创建并保存你的`API Key`（后续调用接口需要，**不要泄露给他人**）
+3. 领取免费调用额度（个人开发者每月有免费额度，测试完全够用，正式使用成本也很低：lite模型1000token仅0.0008元）
+4. 记好官方接口地址：`https://api.doubao.com/v3/chat/completions`
+
+### 1.2 Unity环境配置
+
+不需要额外引入第三方SDK，用Unity自带工具即可完成调用：
+
+1. 导入JSON序列化工具：打开`Package Manager`，搜索并安装`Newtonsoft Json`（包名：`com.unity.nuget.newtonsoft-json`），用于解析API的请求/返回数据
+2. 开启网络权限：在`Player Settings`-`Other Settings`-`Internet Access`设置为`Required`，保证应用可以发送网络请求
+
+***
+
+## 🔌 第二步：跑通基础API调用（实现最简单的一问一答）
+
+先实现最基础的「玩家发问题→调用API→拿到回复」逻辑，验证链路通了再做后续功能。
+
+### 2.1 定义API数据结构
+
+先定义和豆包API匹配的请求/返回类，方便序列化：
+
+```csharp
+using System.Collections.Generic;
+using Newtonsoft.Json;
+// 豆包API请求体结构
+public class ChatCompletionRequest
+{
+    [JsonProperty("model")] public string Model = "doubao-lite-4k"; // 选模型，lite性价比最高
+    [JsonProperty("messages")] public List<ChatMessage> Messages = new();
+    [JsonProperty("temperature")] public float Temperature = 0.7f; // 回复随机性：0=最稳定，1=最随机
+    [JsonProperty("stream")] public bool Stream = false; // 流式输出，后面优化会用到
+}
+// 单条对话消息结构
+public class ChatMessage
+{
+    [JsonProperty("role")] public string Role; // 取值：system(系统设定)/user(玩家)/assistant(NPC)
+    [JsonProperty("content")] public string Content;
+}
+// 豆包API返回结构
+public class ChatCompletionResponse
+{
+    [JsonProperty("choices")] public List<ChatChoice> Choices;
+    [JsonProperty("usage")] public Usage Usage; // 消耗的token数，用于统计成本
+}
+public class ChatChoice
+{
+    [JsonProperty("message")] public ChatMessage Message;
+}
+public class Usage
+{
+    [JsonProperty("total_tokens")] public int TotalTokens;
+}
+```
+
+### 2.2 封装基础API调用逻辑
+
+用Unity自带的`UnityWebRequest`封装异步调用方法，不会阻塞主线程：
+
+```csharp
+using System.Collections;
+using UnityEngine;
+using UnityEngine.Networking;
+using Newtonsoft.Json;
+public class DoubaoApiManager : MonoBehaviour
+{
+    public static DoubaoApiManager Instance; // 单例，全局调用
+    private const string ApiUrl = "https://api.doubao.com/v3/chat/completions";
+    // 注意：如果要发布游戏，不要把API Key硬编码在这里！后面安全部分会讲替代方案
+    private const string ApiKey = "你的豆包API Key"; 
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+    // 对外调用的方法：传入对话列表，回调返回NPC回复
+    public void SendChatRequest(List<ChatMessage> messages, System.Action<string> onSuccess, System.Action<string> onFail = null)
+    {
+        StartCoroutine(RequestCoroutine(messages, onSuccess, onFail));
+    }
+    private IEnumerator RequestCoroutine(List<ChatMessage> messages, System.Action<string> onSuccess, System.Action<string> onFail)
+    {
+        // 组装请求体
+        ChatCompletionRequest request = new ChatCompletionRequest();
+        request.Messages = messages;
+        string jsonData = JsonConvert.SerializeObject(request);
+        // 发送POST请求
+        using (UnityWebRequest webRequest = UnityWebRequest.PostWwwForm(ApiUrl, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            webRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            webRequest.downloadHandler = new DownloadHandlerBuffer();
+            // 设置请求头
+            webRequest.SetRequestHeader("Content-Type", "application/json");
+            webRequest.SetRequestHeader("Authorization", $"Bearer {ApiKey}");
+            // 等待请求返回
+            yield return webRequest.SendWebRequest();
+            // 处理返回结果
+            if (webRequest.result == UnityWebRequest.Result.Success)
+            {
+                string responseJson = webRequest.downloadHandler.text;
+                ChatCompletionResponse response = JsonConvert.DeserializeObject<ChatCompletionResponse>(responseJson);
+                string reply = response.Choices[0].Message.Content;
+                onSuccess?.Invoke(reply);
+            }
+            else
+            {
+                Debug.LogError($"API请求失败：{webRequest.error}，返回内容：{webRequest.downloadHandler.text}");
+                onFail?.Invoke(webRequest.error);
+            }
+        }
+    }
+}
+```
+
+### 2.3 测试基础功能
+
+写个简单的测试脚本，验证能不能正常拿到回复：
+
+```csharp
+public class TestChat : MonoBehaviour
+{
+    void Start()
+    {
+        List<ChatMessage> testMessages = new List<ChatMessage>();
+        testMessages.Add(new ChatMessage(){Role = "user", Content = "你好，介绍一下你自己"});
+        
+        DoubaoApiManager.Instance.SendChatRequest(testMessages, 
+            reply => Debug.Log($"NPC回复：{reply}"),
+            error => Debug.LogError($"失败：{error}")
+        );
+    }
+}
+```
+
+## 运行后如果控制台能正常打印回复，说明基础链路已经跑通了。
+
+## 🎭 第三步：实现NPC性格/语言风格设定
+
+大模型本身没有身份，我们通过**系统提示词（System Prompt）** 给NPC注入设定，这一步是决定NPC会不会OOC（脱离设定）的核心。
+
+### 3.1 用ScriptableObject存储NPC配置
+
+用ScriptableObject做NPC的配置文件，不同NPC可以单独做配置，不需要改代码：
+
+```csharp
+[CreateAssetMenu(fileName = "NewNPCConfig", menuName = "NPC/对话配置")]
+public class NPCDialogueConfig : ScriptableObject
+{
+    [Header("基础信息")]
+    public string npcName; // NPC名字
+    public string npcId; // 唯一ID，用于存储记忆
+    [Header("性格设定")]
+    [TextArea(5, 10)] public string systemPrompt; // 系统提示词，核心设定
+    [Header("对话参数")]
+    public float temperature = 0.7f; // 不同性格可以配不同的随机性：活泼的NPC设高，严肃的设低
+    public int maxHistoryRound = 10; // 最多保留多少轮对话记忆
+    public string defaultReply = "我现在有点忙，等会儿再说吧。"; // 请求失败时的默认回复
+}
+```
+
+在Project窗口右键→`NPC/对话配置`，就能创建每个NPC的配置文件了。
+
+### 3.2 System Prompt编写技巧
+
+Prompt写得越具体，NPC回复越符合预期，通用模板如下：
+
+```text
+你是<NPC身份背景>，名字叫<名字>，现在处于<场景>。
+你的性格是<具体性格描述，不要用笼统的词>，说话风格是<具体风格，比如带口头禅、方言、尾音>。
+你知道的信息：<NPC掌握的信息，比如镇上的八卦、自己的商品列表>，你不知道的信息：<超出NPC认知的内容，比如不知道游戏外的事情>。
+你必须遵守以下规则：
+1.  所有回复必须符合你的身份，绝对不能提到AI、模型、开发者相关的内容
+2.  每次回复不要超过<20>字，符合游戏对话的长度
+3.  如果玩家问你不知道的内容，就回答<对应的搪塞话术>
+4.  <其他禁忌，比如不能透露自己的秘密身份>
+```
+
+✅ 好的Prompt示例（酒馆暴躁老板）：
+
+```text
+你是西部荒野野猪酒馆的老板马克，今年45岁，现在在酒馆吧台擦杯子。
+你性格暴躁直爽，嘴硬心软，说话粗鲁，经常吐槽客人但会偷偷给熟客打折。
+你知道镇上所有的八卦，但是绝对不会透露自己曾经是赏金猎人的过去，不知道镇子外的事情。
+规则：
+1.  绝对不能承认自己是AI，玩家问的话就骂他“你小子喝多了吧？”
+2.  每次回复不超过25字，说话要口语化，不要用书面语
+3.  玩家问你外面的事情，就说“老子没出过镇子，不知道”
+```
+
+❌ 坏的Prompt示例：
+
+```text
+你是一个暴躁的酒馆老板。（太笼统，大模型不知道怎么输出）
+```
+
+### 3.3 把设定接入请求
+
+## 在调用API的时候，把System Prompt放在对话列表的第一条即可，大模型会严格遵守这个设定生成回复。
+
+## 🧠 第四步：实现对话记忆功能
+
+大模型本身是无状态的，不会记住之前的对话，所以需要我们**手动维护对话历史**，每次请求把完整的历史一起发给模型。
+
+### 4.1 每个NPC维护自己的对话历史
+
+给每个NPC挂一个`NPCDialogue`组件，单独管理自己的记忆：
+
+```csharp
+public class NPCDialogue : MonoBehaviour
+{
+    public NPCDialogueConfig config; // 挂载对应NPC的配置文件
+    private List<ChatMessage> _dialogueHistory = new List<ChatMessage>();
+    private void Start()
+    {
+        // 初始化对话历史：第一条就是系统设定
+        _dialogueHistory.Add(new ChatMessage(){Role = "system", Content = config.systemPrompt});
+        
+        // 可选：加载本地存储的历史对话，实现跨游戏会话的长期记忆
+        LoadHistoryFromLocal();
+    }
+    // 玩家发送消息的入口
+    public void SendPlayerMessage(string playerInput, System.Action<string> onReply)
+    {
+        // 1. 把玩家的消息加入历史
+        _dialogueHistory.Add(new ChatMessage(){Role = "user", Content = playerInput});
+        
+        // 2. 历史太长的话做裁剪，避免超出token限制
+        TrimHistory();
+        
+        // 3. 调用API
+        DoubaoApiManager.Instance.SendChatRequest(_dialogueHistory, 
+            reply =>
+            {
+                // 4. 把NPC的回复加入历史
+                _dialogueHistory.Add(new ChatMessage(){Role = "assistant", Content = reply});
+                // 5. 可选：保存历史到本地
+                SaveHistoryToLocal();
+                onReply?.Invoke(reply);
+            },
+            error =>
+            {
+                // 请求失败返回默认回复
+                onReply?.Invoke(config.defaultReply);
+            }
+        );
+    }
+    // 裁剪历史对话，避免token溢出
+    private void TrimHistory()
+    {
+        // 保留1条system + 2*maxHistoryRound条消息（每轮是user+assistant两条）
+        int maxTotalCount = 1 + config.maxHistoryRound * 2;
+        while (_dialogueHistory.Count > maxTotalCount)
+        {
+            // 删除最早的一轮对话（system永远保留，所以从索引1开始删）
+            _dialogueHistory.RemoveRange(1, 2);
+        }
+    }
+    // 可选：把历史序列化存到本地，实现长期记忆
+    private void SaveHistoryToLocal()
+    {
+        string json = JsonConvert.SerializeObject(_dialogueHistory);
+        PlayerPrefs.SetString($"NPC_History_{config.npcId}", json);
+    }
+    private void LoadHistoryFromLocal()
+    {
+        if (PlayerPrefs.HasKey($"NPC_History_{config.npcId}"))
+        {
+            string json = PlayerPrefs.GetString($"NPC_History_{config.npcId}");
+            _dialogueHistory = JsonConvert.DeserializeObject<List<ChatMessage>>(json);
+        }
+    }
+    // 可选：清除当前NPC的记忆
+    public void ClearHistory()
+    {
+        _dialogueHistory.Clear();
+        _dialogueHistory.Add(new ChatMessage(){Role = "system", Content = config.systemPrompt});
+        PlayerPrefs.DeleteKey($"NPC_History_{config.npcId}");
+    }
+}
+```
+
+### 4.2 长对话记忆优化
+
+如果是非常长的对话，单纯裁剪会丢失关键信息，可以用「记忆总结」方案：
+
+- 当对话轮数达到阈值时，额外调用一次API，让模型把之前的对话历史总结成100字以内的关键信息
+- 把总结内容追加到System Prompt的末尾，然后清空之前的user/assistant历史
+- 既保留了核心记忆，又不会让token占用过高
+
+***
+
+## 🏗️ 第五步：Unity NPC模块架构整合
+
+把逻辑和UI分离，方便后续扩展，建议分成三层：
+
+| 层级  | 职责                                                   |
+| :-- | :--------------------------------------------------- |
+| 数据层 | NPC配置（ScriptableObject）、对话历史存储、本地持久化                 |
+| 逻辑层 | API调用管理（DoubaoApiManager）、单NPC对话逻辑（NPCDialogue）、对话审核 |
+| UI层 | 对话气泡、输入框、NPC状态提示（比如“思考中”动画）、表情动画联动                   |
+
+### 简单的UI调用示例：
+
+```csharp
+public class DialogueUIManager : MonoBehaviour
+{
+    public NPCDialogue currentInteractNPC; // 当前交互的NPC
+    public InputField playerInputField;
+    public Text npcReplyText;
+    public GameObject thinkingTips; // “思考中”提示
+    // 点击发送按钮调用
+    public void OnSendButtonClick()
+    {
+        string playerInput = playerInputField.text;
+        if (string.IsNullOrEmpty(playerInput)) return;
+        
+        // 显示思考中
+        thinkingTips.SetActive(true);
+        npcReplyText.text = "";
+        
+        // 调用NPC对话逻辑
+        currentInteractNPC.SendPlayerMessage(playerInput, reply =>
+        {
+            // 隐藏思考中，显示回复
+            thinkingTips.SetActive(false);
+            npcReplyText.text = reply;
+            
+            // 可选：根据回复判断NPC情绪，播放表情/动画
+            UpdateNPCEmotion(reply);
+        });
+    }
+}
+```
+
+***
+
+## 🔒 第六步：安全与体验优化（上线必备）
+
+### 6.1 安全优化：绝对不要把API Key放在客户端
+
+如果你的游戏要对外发布，硬编码API Key会被人解包窃取，刷爆你的额度，必须加一层代理：
+
+#### 低成本方案：用云函数做转发
+
+只需要几行代码，就能把API Key存在服务端，Unity只调用你的代理地址：
+
+```javascript
+// 以腾讯云函数/阿里云函数为例，Node.js代码
+const axios = require('axios');
+exports.main = async (event) => {
+    const DOUBAO_API_KEY = "你的API Key";
+    try {
+        const response = await axios.post(
+            "https://api.doubao.com/v3/chat/completions",
+            JSON.parse(event.body), // 直接转发Unity发来的请求体
+            {
+                headers: {
+                    "Authorization": `Bearer ${DOUBAO_API_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+        return response.data;
+    } catch (e) {
+        return {error: "请求失败"};
+    }
+};
+```
+
+创建云函数后会拿到一个HTTP触发地址，把`DoubaoApiManager`里的`ApiUrl`换成这个地址，删掉代码里的API Key即可，云函数的免费额度足够个人开发者使用。
+
+### 6.2 体验优化
+
+1. **流式输出**：把API请求的`stream`设为`true`，逐字解析返回的chunk，实现像打字一样的逐字显示效果，不用等全部回复生成再显示，体验更流畅
+2. **错误兜底**：网络不好、API限流时返回默认回复，不要弹出报错
+3. **内容审核**：玩家输入和NPC回复都做关键词过滤，或者调用豆包的内容审核API，避免出现违规内容
+4. **请求频率限制**：同一个NPC每秒最多处理1次请求，避免玩家疯狂刷消息导致限流
+5. **预设对话兜底**：关键剧情相关的问题可以做关键词匹配，直接返回预设回复，不用调用API，既保证剧情不跑偏，又省成本
+
+***
+
+## ✨ 第七步：进阶功能扩展
+
+### 7.1 对接游戏逻辑（Function Call）
+
+豆包API支持函数调用，让NPC可以主动获取游戏内的信息，实现和游戏世界的联动：
+比如玩家问“现在游戏里几点了？”“你这卖什么东西？”，模型会自动调用你写的游戏函数，拿到结果后再生成回复：
+
+1. 在请求体里加`functions`参数，定义你开放给NPC的函数（比如`GetGameTime`、`GetNPCGoods`）
+2. 模型判断需要调用函数时，会返回`tool_call`参数，告诉你要调用哪个函数、传什么参数
+3. 你在Unity里调用对应的游戏逻辑，拿到结果后再发给模型，模型生成符合场景的回复
+
+### 7.2 情绪与动画联动
+
+在System Prompt里要求模型回复时带上情绪标签，比如：
+
+```text
+每次回复的最后加上【情绪：x】，x只能是：正常/生气/高兴/惊讶，比如“你小子欠揍是吧？【情绪：生气】”
+```
+
+代码里提取情绪标签，控制NPC的表情、动作、语音语调，代入感更强。
+
+### 7.3 全局记忆共享
+
+## 如果要实现“玩家干了坏事，全镇的NPC都知道”的效果，可以把玩家的全局行为（比如`{"玩家抢了水果店", "玩家帮了村长"}`）统一加到所有NPC的System Prompt里，实现跨NPC的信息同步。
+
+## 🎯 测试与调试技巧
+
+1. Prompt先在豆包网页端调试，确认回复符合预期再放到代码里，不用反复跑Unity
+2. 控制台打印每次的请求`messages`数组，确认历史和设定有没有传对
+3. 豆包开放平台控制台可以看每次调用的日志和token消耗，方便排查问题
+   按照这个步骤走，最快半天就能做出一个具备基本功能的智能NPC，后续可以根据需求不断优化设定和体验\~
+
