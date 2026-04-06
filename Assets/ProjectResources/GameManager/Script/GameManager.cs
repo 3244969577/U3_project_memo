@@ -108,8 +108,16 @@ public class GameManager : MonoBehaviour
 
     public FloatingText ShowText(string msg, int fontSize, Color color, Vector3 position, Vector3 motion, float duration)
     {
-        return floatingTextManager.Show(msg, fontSize, color, position, motion, duration);
+        Debug.Log($"ShowText: {msg}");
+        if (floatingTextManager != null)
+        {
+            return floatingTextManager.Show(msg, fontSize, color, position, motion, duration);
+        } else {
+            Debug.LogError("FloatingTextManager is null");
+            return null;
+        }
     }
+
 
     public void RetryScene()
     {
@@ -161,10 +169,6 @@ public class GameManager : MonoBehaviour
 
     #region 游戏暂停/恢复接口
 
-    /// <summary>
-    /// 暂停游戏
-    /// 用于打开UI界面时暂停游戏逻辑
-    /// </summary>
     public void PauseGame()
     {
         if (!isPaused)
@@ -176,10 +180,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 恢复游戏
-    /// 用于关闭UI界面时恢复游戏逻辑
-    /// </summary>
     public void ResumeGame()
     {
         if (isPaused)
@@ -190,9 +190,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 切换暂停状态
-    /// </summary>
     public void TogglePause()
     {
         if (isPaused)
@@ -205,10 +202,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 检查游戏是否处于暂停状态
-    /// </summary>
-    /// <returns>是否暂停</returns>
     public bool IsGamePaused()
     {
         return isPaused;

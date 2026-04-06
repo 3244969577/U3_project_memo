@@ -1264,7 +1264,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5636386860515200766}
   - component: {fileID: 2531243553164513920}
-  - component: {fileID: 3986905716526836298}
   - component: {fileID: 6861130796787016785}
   - component: {fileID: 4377489193947554496}
   m_Layer: 0
@@ -1290,6 +1289,7 @@ Transform:
   - {fileID: 5954100333564451473}
   - {fileID: 3962216322802273124}
   - {fileID: 3201897191101729911}
+  - {fileID: 1184583790126939312}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &2531243553164513920
@@ -1351,21 +1351,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &3986905716526836298
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2878692597091223956}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cc03961113fa349c09cb06ef2911013d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Fungus::Fungus.Clickable2D
-  clickEnabled: 1
-  hoverCursor: {fileID: 0}
-  useEventSystem: 0
 --- !u!58 &6861130796787016785
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1871,6 +1856,55 @@ MonoBehaviour:
   isAlert: 0
   m_InputValidator: {fileID: 0}
   m_ShouldActivateOnSelect: 1
+--- !u!1 &8006539890562353043
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1184583790126939312}
+  - component: {fileID: 6425289883677342194}
+  m_Layer: 0
+  m_Name: Client
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1184583790126939312
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8006539890562353043}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 38.485588, y: 29.00732, z: 0}
+  m_LocalScale: {x: 0.125, y: 0.125, z: 0.125}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5636386860515200766}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6425289883677342194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8006539890562353043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed499c5fca516244eaab13284c4f729e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ComfyUIClient
+  ComfyUIBaseUrl: http://127.0.0.1:6006
+  PollingIntervalMs: 1000
+  MaxPollingTimes: 120
+  ImageSaveRoot: 
+  ImageSaveFolder: GeneratedImages
 --- !u!1001 &6032200528417638667
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1913,7 +1947,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3064798588569058445, guid: d40735ff90ab66d469adb9ad4f527f66, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5403888978880731099, guid: d40735ff90ab66d469adb9ad4f527f66, type: 3}
       propertyPath: m_SizeDelta.y
@@ -1945,7 +1979,7 @@ PrefabInstance:
       objectReference: {fileID: 1802969398598240833}
     - target: {fileID: 6693122843431168920, guid: d40735ff90ab66d469adb9ad4f527f66, type: 3}
       propertyPath: useLLMForDialogue
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6893141566106955993, guid: d40735ff90ab66d469adb9ad4f527f66, type: 3}
       propertyPath: m_fontAsset

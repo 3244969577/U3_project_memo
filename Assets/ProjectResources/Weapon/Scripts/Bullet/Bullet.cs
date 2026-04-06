@@ -4,28 +4,15 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Bullet : MonoBehaviour {
 
-	public enum BulletType
-	{
-		Player, // 玩家子弹
-		Enemy   // 敌人子弹
-	}
-
-	public BulletType bulletType = BulletType.Player;
+	public string[] targetTags; // 能够命中的目标标签数组
 	public float damage;
 	public GameObject hitEffect = null;
 	public float pushForce = 0; // 仅敌人子弹使用
 	public float lifeTime = 2f; // 子弹生命周期（秒）
 	private float lifeTimer = 0f; // 生命周期计时器
-	public BulletEffectManager effectManager;
 
 	protected void Awake()
 	{
-		// effectManager = GetComponent<BulletEffectManager>();
-		if (effectManager != null)
-		{
-			effectManager.Initialize(this);
-		}
-		
 		// 确保子弹有Bullet标签
 		gameObject.tag = "Bullet";
 		
@@ -42,11 +29,6 @@ public class Bullet : MonoBehaviour {
 
 	protected void Update()
 	{
-		if (effectManager != null)
-		{
-			effectManager.Update();
-		}
-		
 		// 更新子弹朝向
 		UpdateBulletRotation();
 		
@@ -75,73 +57,48 @@ public class Bullet : MonoBehaviour {
 		}
 	}
 
-	public void OnShoot()
-	{
-		
-		if (effectManager != null)
-		{
-			// Debug.Log("Bullet OnShoot");
-			effectManager.OnShoot();
-		}
-	}
-
-	protected void DealDamage(Damageable target)
-    {
-		target.GetDamaged(this.damage);
-	}
+	
 
 	private void OnTriggerEnter2D(Collider2D collision) {
 
-		// 先处理效果管理器的碰撞事件
-		if (effectManager != null)
+		// 检查是否是目标标签
+		bool isTarget = true; // 默认所有可伤害对象都能命中
+		if (targetTags != null && targetTags.Length > 0)
 		{
-			effectManager.OnTriggerEnter2D(collision);
-		}
-
-		// 根据子弹类型处理碰撞忽略
-		if (bulletType == BulletType.Player)
-		{
-			// 玩家子弹忽略Player和NPC
-			if (collision.gameObject.tag == "Player" || collision.gameObject.tag == "NPC")
+			isTarget = false;
+			foreach (string tag in targetTags)
 			{
-				return;
-			}
-		}
-		else if (bulletType == BulletType.Enemy)
-		{
-			// 敌人子弹忽略Enemy和NPC
-			if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("NPC"))
-			{
-				return;
+				if (collision.CompareTag(tag))
+				{
+					isTarget = true;
+					break;
+				}
 			}
 		}
 
 		// 处理墙壁碰撞
-		if (collision.gameObject.tag == "Wall")
+		if (collision.CompareTag("Wall"))
 		{
 			SpawnHitEffect();
 			Destroy(gameObject);
 		}
 
 		// 处理可伤害目标碰撞
-		else if (collision.gameObject.GetComponent<Damageable>())
+		else if (collision.gameObject.GetComponent<Damageable>() && isTarget)
 		{
 			SpawnHitEffect();
 
 			// 显示伤害
-			GameManager.instance.ShowText((-this.damage).ToString(), 100, Color.red, collision.transform.position + new Vector3(0.5f, 1.75f, 0), Vector3.up, 2.0f);
+			GameManager.Instance.ShowText((-this.damage).ToString(), 100, Color.white, collision.transform.position + new Vector3(0.5f, 1.75f, 0), Vector3.up, 2.0f);
 			
-			// 敌人子弹击中目标后销毁
-			if (bulletType == BulletType.Enemy)
-			{
-				Destroy(gameObject);
-			}
+			// 击中目标后销毁
+			Destroy(gameObject);
 
 			DealDamage(collision.gameObject.GetComponent<Damageable>());
 		}
 
 		// 处理可破坏物体碰撞
-		else if (collision.gameObject.tag == "Destructible")
+		else if (collision.CompareTag("Destructible"))
         {
 			Destroy(collision.gameObject);
 			Destroy(gameObject);
@@ -159,4 +116,13 @@ public class Bullet : MonoBehaviour {
 		}
 	}
 
+	protected void DealDamage(Damageable target)
+    {
+		target.GetDamaged(this.damage);
+	}
+
+	public void OnShoot()
+	{
+		Debug.Log("OnShoot");
+	}
 }

@@ -122,14 +122,14 @@ public class Dialogable : MonoBehaviour
         
         // 设置Canvas大小
         RectTransform canvasRect = promptObject.GetComponent<RectTransform>();
-        canvasRect.sizeDelta = new Vector2(200, 50);
-        canvasRect.localScale = new Vector3(0.03f, 0.03f, 1f);
+        canvasRect.sizeDelta = new Vector2(280, 40);
+        canvasRect.localScale = new Vector3(0.02f, 0.02f, 1f);
         
         // 添加文本组件
         GameObject textObj = new GameObject("PromptText");
         textObj.transform.SetParent(promptObject.transform);
-        textObj.transform.localPosition = Vector3.up * 10;
-        textObj.transform.localScale = new Vector3(1f, 1f, 1f);
+        textObj.transform.localPosition = Vector3.up * 5;
+        textObj.transform.localScale = new Vector3(.2f, .2f, 1f);
         
         Text promptText = textObj.AddComponent<Text>();
         promptText.text = "按下E键进行交互";
@@ -140,7 +140,7 @@ public class Dialogable : MonoBehaviour
         
         // 设置文本矩形
         RectTransform textRect = promptText.GetComponent<RectTransform>();
-        textRect.sizeDelta = new Vector2(200, 50);
+        textRect.sizeDelta = new Vector2(280, 40);
         
         
         

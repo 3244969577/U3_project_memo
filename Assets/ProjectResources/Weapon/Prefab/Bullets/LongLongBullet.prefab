@@ -13,11 +13,9 @@ GameObject:
   - component: {fileID: 7538085695522997028}
   - component: {fileID: 4073709402175301706}
   - component: {fileID: 2813220044168868959}
-  - component: {fileID: 1239322460595609047}
-  - component: {fileID: 8254426640559580064}
   m_Layer: 0
   m_Name: LongLongBullet
-  m_TagString: Untagged
+  m_TagString: Bullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -135,12 +133,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 837e4be56a12c4eb99752ef8c246f417, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletType: 0
+  targetTags:
+  - Enemy
   damage: 120
   hitEffect: {fileID: 4165416898195833230, guid: e1e61550efd759c4a99c951c7475dfd0, type: 3}
   pushForce: 0
   lifeTime: 5
-  effectManager: {fileID: 1239322460595609047}
 --- !u!61 &2813220044168868959
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -187,30 +185,3 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.2386658, y: 0.23680401}
   m_EdgeRadius: 0
---- !u!114 &1239322460595609047
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4901200913563074436}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3c11d331edc64445b23d763e946ff3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BulletEffectManager
---- !u!114 &8254426640559580064
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4901200913563074436}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6548000c3e5384c48b7ec047401c989e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SplitBulletEffect
-  splitCount: 3
-  angleRange: 90
-  bulletPrefab: {fileID: 4847584998270608119, guid: be56b4a21a2ac624191f1e27761d7ef6, type: 3}

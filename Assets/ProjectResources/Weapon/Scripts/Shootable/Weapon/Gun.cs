@@ -8,15 +8,15 @@ public class Gun : Weapon
 {
     public Shootable shooter;
     
-    protected override void UpdateDurability(float value)
-    {
-        this.durability += value;
+    // protected override void UpdateDurability(float value)
+    // {
+    //     this.durability += value;
 
-        if (this.durability <= 0)
-        {
-            this.OnDurabilityBreak();
-        }
-    }
+    //     if (this.durability <= 0)
+    //     {
+    //         this.OnDurabilityBreak();
+    //     }
+    // }
 
     private void UpdateFirePointWithMousePosition(Vector2 mousePosition)
     {

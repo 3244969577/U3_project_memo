@@ -54,7 +54,7 @@ public static class FungusNodeBuilder
         Block block = flowchart.CreateBlock(blockPosition);
         // 第一个节点使用 NPC 名字作为 BlockName，方便统一调用
         // 其他节点使用 Node_{id} 格式
-        block.BlockName = node.id == "1" ? npcName : $"Node_{node.id}";
+        block.BlockName = node.id == "1" ? $"Node_{npcName}" : $"Node_{node.id}";
         
         // ① 添加对话命令
         Say say = AddCommandToBlock<Say>(block);
