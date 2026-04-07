@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class Collidable : MonoBehaviour
 {
-    protected virtual void Start() { }
-    protected virtual void OnCollisionEnter2D(Collision2D collision)
+    public virtual void Start() { }
+    public virtual void OnCollisionEnter2D(Collision2D collision)
     {
 
     }
 
-    protected virtual void OnCollisionExit2D(Collision2D collision)
+    public virtual void OnCollisionExit2D(Collision2D collision)
     {
 
     }

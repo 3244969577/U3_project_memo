@@ -12,7 +12,7 @@ public class Barrel : Destructible
     private List<Damageable> nearbyDamageableObjects = new List<Damageable>();
     protected Animator animator;
 
-    protected override void Start()
+    public override void Start()
     {
         base.Start();
         this.animator = GetComponent<Animator>();
@@ -26,7 +26,7 @@ public class Barrel : Destructible
     //     } 
     // }
 
-    protected override void OnDestroyed()
+    public override void OnDestroyed()
     {
         this.animator.SetTrigger(COLLECTED_ANIM);
         SoundManager.instance.PlaySound("Explosion");

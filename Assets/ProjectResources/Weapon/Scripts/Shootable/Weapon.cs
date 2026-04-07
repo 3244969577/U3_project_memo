@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using GameStatusSystem.PlayerStatus.Events;
 public abstract class Weapon : Collectible
 {
+    public float score = 100f;
+
     protected bool isAttached = false;
 
     protected abstract void Attack();
@@ -40,6 +42,10 @@ public abstract class Weapon : Collectible
     {
         if (collision.CompareTag("Player"))
         {
+            // 触发玩家获得装备事件
+            EventBus<ObtainEquipmentEvent>.Raise(new ObtainEquipmentEvent { equipment = this.gameObject });
+
+
             Debug.Log("武器被玩家拾取");
             Player player = collision.GetComponent<Player>();
 

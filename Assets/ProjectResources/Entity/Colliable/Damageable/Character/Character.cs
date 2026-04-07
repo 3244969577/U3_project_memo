@@ -8,54 +8,21 @@ using System.Collections;
 /// </summary>
 public abstract class Character : Damageable
 {
-    /// <summary>
-    /// 角色的护盾值
-    /// - 护盾可以吸收伤害，保护角色生命值
-    /// </summary>
     public float shield;
-
-    /// <summary>
-    /// 角色的移动速度
-    /// - 影响角色的移动和追逐速度
-    /// </summary>
     public float speed;
-
-    /// <summary>
-    /// 角色的基础伤害值
-    /// - 影响角色攻击时造成的伤害
-    /// </summary>
     public float damage;
-
-    /// <summary>
-    /// 角色的精灵渲染器
-    /// - 用于控制角色的视觉显示
-    /// </summary>
     [HideInInspector]
     public SpriteRenderer spriteRenderer;
-
-    /// <summary>
-    /// 角色的动画控制器
-    /// - 用于控制角色的动画播放
-    /// </summary>
     protected Animator animator;
 
-    /// <summary>
-    /// 角色的刚体组件
-    /// - 用于物理移动和碰撞
-    /// </summary>
     protected Rigidbody2D rb;
 
-    /// <summary>
-    /// 角色是否可以移动
-    /// - true: 角色可以移动
-    /// - false: 角色被冻结，无法移动
-    /// </summary>
     protected bool moveAble = true;
 
-    protected virtual void Move() { }
-    protected virtual void Attack(Damageable target) { }
-    protected virtual void Die() { }
-    protected override void Update()
+    public virtual void Move() { }
+    public virtual void Attack(Character target) { }
+    public virtual void Die() { }
+    public override void Update()
     {
         base.Update();
         if (this.healthBar.GetHealth() <= 0f)
@@ -64,7 +31,7 @@ public abstract class Character : Damageable
         }
     }
 
-    protected override void Start()
+    public override void Start()
     {
         base.Start();
         this.rb = GetComponent<Rigidbody2D>();
@@ -84,5 +51,10 @@ public abstract class Character : Damageable
     public void UnFreezeMovement()
     {
         this.moveAble = true;
+    }
+    
+    public Rigidbody2D GetRigidbody()
+    {
+        return this.rb;
     }
 }

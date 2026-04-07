@@ -7,7 +7,7 @@ public class Ghost : Enemy
 
 	bool spriteDirection;
 
-	protected override void Start()
+	public override void Start()
 	{
 		base.Start();
 		spriteDirection = spriteRenderer.flipX;

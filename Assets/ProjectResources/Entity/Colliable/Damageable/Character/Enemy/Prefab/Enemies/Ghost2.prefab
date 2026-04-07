@@ -134,7 +134,7 @@ MonoBehaviour:
   RoamingRange: 6
   ChaseRange: 8
   StopChaseRange: 15
-  AttackRange: 4
+  AttackRange: 2
 --- !u!50 &6454894064251681742
 Rigidbody2D:
   serializedVersion: 5
@@ -181,8 +181,10 @@ MonoBehaviour:
   spriteRenderer: {fileID: 0}
   reward: {fileID: 6144220081261200847, guid: 3db631bf27bef0b418b5e63d88712259, type: 3}
   dropRate: 0.5
-  attackRate: 0.3
+  attackRate: 1
   pushForce: 70
+  killScore: 500
+  minDifficultyLevel: 2
 --- !u!70 &6454894064251681736
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

@@ -135,7 +135,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetTags:
   - Enemy
-  damage: 120
+  damage: 300
   hitEffect: {fileID: 4165416898195833230, guid: e1e61550efd759c4a99c951c7475dfd0, type: 3}
   pushForce: 0
   lifeTime: 5

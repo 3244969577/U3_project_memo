@@ -53,14 +53,14 @@ public class Player : Character
 	/// - 调用基类Start方法初始化基础组件
 	/// - 获取子对象中的武器组件
 	/// </summary>
-	protected override void Start()
+	public override void Start()
 	{
 		base.Start();
 		this.weapon = GetComponentInChildren<Weapon>();
 	}
 
 	// Update is called once per frame
-	protected override void Update()
+	public override void Update()
 	{
 		base.Update();
 		this.movement.x = Input.GetAxisRaw("Horizontal");
@@ -131,7 +131,7 @@ public class Player : Character
 	/// - 使用物理刚体的MovePosition方法确保平滑移动
 	/// - 更新玩家朝向
 	/// </summary>
-	protected override void Move()
+	public override void Move()
 	{
 		// 移动玩家
 		this.rb.MovePosition(rb.position + movement * speed * Time.fixedDeltaTime);
@@ -147,7 +147,7 @@ public class Player : Character
 	/// - 如果玩家装备了武器，则销毁武器对象
 	/// - 调用GameManager的RetryScene方法重新加载当前场景
 	/// </summary>
-	protected override void Die()
+	public override void Die()
 	{
 		this.animator.SetTrigger(DEATH_ANIM);
 		if (this.weapon != null)

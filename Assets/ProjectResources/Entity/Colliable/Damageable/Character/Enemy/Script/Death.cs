@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GameStatusSystem.PlayerStatus.Events;
 
 /// <summary>
 /// Death Boss类 - 游戏中的死亡Boss
@@ -87,6 +88,8 @@ public class Death : Boss
     /// </summary>
 	public float[] HEALTH_PHRASE = { 0.6f, 0.15f };
 
+
+
     /// <summary>
     /// 初始化Boss状态
     /// - 设置初始攻击阶段为第一阶段
@@ -96,13 +99,14 @@ public class Death : Boss
     {
 		phrase = PHRASE.ONE;
 		lastPhrase = PHRASE.ONE;
+		killScore = 1000;
 	}
 
     /// <summary>
     /// 启动Boss
     /// - 调用父类Start方法
     /// </summary>
-	protected override void Start()
+	public override void Start()
 	{
 		base.Start();
 	}
@@ -115,8 +119,8 @@ public class Death : Boss
     /// - 发射子弹并设置生命周期
     /// </summary>
     /// <param name="target">攻击目标</param>
-	protected void PhraseAttack(Damageable target)
-    {
+	protected void PhraseAttack(Character target)
+	{
 		if (Time.time > this.attackRate + this.lastAttack && ableToAttack)
 		{
 			this.animator.SetTrigger(ATTACK_ANIM);
@@ -148,7 +152,7 @@ public class Death : Boss
     ///   - 死亡阶段：不执行攻击
     /// </summary>
     /// <param name="target">攻击目标</param>
-	protected override void Attack(Damageable target)
+	public override void Attack(Character target)
 	{
 
 		phrase = CheckPhrase();
@@ -285,8 +289,17 @@ public class Death : Boss
     /// - 触发死亡事件
     /// - 等待动画播放完成后销毁游戏对象
     /// </summary>
-	protected override void Die()
+	public override void Die()
 	{
+		// 触发敌人击杀事件
+		GameObject killer = GetLastAttacker();
+		EnemyKilledEvent killedEvent = new EnemyKilledEvent {
+			enemy = gameObject,
+			killer = killer,
+			score = killScore
+		};
+		EventBus<EnemyKilledEvent>.Raise(killedEvent);
+		
 		this.animator.SetTrigger(DEATH_ANIM);
 
 		float delay = 0f;
@@ -294,5 +307,10 @@ public class Death : Boss
 
 		InvokeTrigger();
 		Destroy(gameObject, this.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).length + delay);
+	}
+
+    public override void GetDamaged(float value, GameObject attacker)
+	{
+		base.GetDamaged(value, attacker);
 	}
 }

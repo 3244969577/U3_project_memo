@@ -104,6 +104,7 @@ public class EnemyAI : MonoBehaviour
             case State.ChaseState:
                 ChaseTarget(target);
                 break;
+            
             case State.AttackState:
                 AttackTarget(target);
                 break;
@@ -163,6 +164,7 @@ public class EnemyAI : MonoBehaviour
 
     protected void AttackTarget(Player player)
     {
-        this.instance.AttackTo(player);
+        this.instance.Attack(player);
     }
+
 }

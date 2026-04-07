@@ -5,7 +5,7 @@ public class Zombie : Enemy
 {
 	const string TAG = "Zombie";
 
-	protected override void Start()
+	public override void Start()
 	{
 		base.Start();
 	}

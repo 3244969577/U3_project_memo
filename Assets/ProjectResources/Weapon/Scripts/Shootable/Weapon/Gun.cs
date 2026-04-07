@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using GameStatusSystem.PlayerStatus;
 using UnityEngine;
 
 [RequireComponent(typeof(Shootable))]

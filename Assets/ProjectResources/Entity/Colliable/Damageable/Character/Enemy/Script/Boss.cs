@@ -1,11 +1,7 @@
 using System;
 using UnityEngine;
+using GameStatusSystem.PlayerStatus.Events;
 
-/// <summary>
-/// Boss敌人类 - 游戏中的大型敌人
-/// - 继承自Enemy，包含敌人的基本属性和行为
-/// - 实现特殊的攻击方式和死亡事件
-/// </summary>
 public class Boss : Enemy
 {
     /// <summary>
@@ -31,14 +27,14 @@ public class Boss : Enemy
 	/// </summary>
 	public GameObject bulletPrefab;
 	
-	protected override void Start()
+	public override void Start()
     {
 		base.Start();
 		SoundManager.instance.PlaySong("BattleTheme");
     }
 
 	// Trigger the trigger zone
-	protected void InvokeTrigger()
+	public void InvokeTrigger()
 	{
 		EventHandler handler = OnDeathTrigger;
 		if (handler != null)
@@ -48,8 +44,17 @@ public class Boss : Enemy
 
 	}
 
-    protected override void Die()
+    public override void Die()
 	{
+		// 触发敌人击杀事件
+		GameObject killer = GetLastAttacker();
+		EnemyKilledEvent killedEvent = new EnemyKilledEvent {
+			enemy = gameObject,
+			killer = killer,
+			score = killScore
+		};
+		EventBus<EnemyKilledEvent>.Raise(killedEvent);
+		
 		this.animator.SetTrigger(DEATH_ANIM);
 		if (reward)
 		{
@@ -66,8 +71,8 @@ public class Boss : Enemy
 		Destroy(gameObject);
 	}
 
-	protected override void Attack(Damageable target)
-    {
+	public override void Attack(Character target)
+	{
 		if (Time.time > this.attackRate + this.lastAttack)
 		{
 			GameObject newBullet = Instantiate(bulletPrefab, transform.position, transform.rotation);

@@ -1,6 +1,6 @@
-﻿﻿﻿﻿﻿﻿﻿﻿using UnityEngine;
+﻿﻿using UnityEngine;
 using System.Collections;
-
+using GameStatusSystem.PlayerStatus.Events;
 /// <summary>
 /// 敌人基类 - 所有敌人的基础类
 /// - 继承自Character，包含角色的基本属性和行为
@@ -32,13 +32,24 @@ public class Enemy : Character
 	/// 敌人攻击时对玩家的推力
 	/// - 影响攻击时玩家被推开的距离
 	/// </summary>
-	public float pushForce = 30000f;
+	public float pushForce = 3f;
 
 	/// <summary>
 	/// 上次攻击的时间
 	/// - 用于控制攻击间隔
 	/// </summary>
 	protected float lastAttack = 0f;
+
+	/// <summary>
+	/// 敌人死亡时的分数
+	/// </summary>
+	public int killScore = 100;
+
+	/// <summary>
+	/// 最低难度下限
+	/// - 只有当前难度超过该值才会生成这种敌人
+	/// </summary>
+	public float minDifficultyLevel = 1f;
 
 	public virtual void MoveTo(Vector3 position)
 	{
@@ -50,13 +61,19 @@ public class Enemy : Character
 		}
 	}
 
-	public void AttackTo(Damageable target)
-    {
-		this.Attack(target);
-	}
 
-	protected override void Die()
+	public override void Die()
 	{
+		// 触发敌人击杀事件
+		GameObject killer = GetLastAttacker();
+		EnemyKilledEvent killedEvent = new EnemyKilledEvent {
+			enemy = gameObject,
+			killer = killer,
+			score = killScore
+		};
+		EventBus<EnemyKilledEvent>.Raise(killedEvent);
+		
+		// 处理掉落
 		if (reward)
         {
 			float rand = Random.Range(0f, 1f);
@@ -74,32 +91,48 @@ public class Enemy : Character
 		this.healthBar.UpdateHealth(-value);
 	}
 
-	// Basic attack, deal damage on touch
-	protected override void Attack(Damageable target)
+	public override void GetDamaged(float value, GameObject attacker)
 	{
+		base.GetDamaged(value, attacker);
+	}
+
+	// Basic attack, deal damage on touch
+	public override void Attack(Character target)
+	{
+		
+		if (Time.time > this.attackRate + this.lastAttack) {
+			Debug.Log("Attack to " + target.name);
+			this.lastAttack = Time.time;
+			AttackTo(target);
+
+			// 打印伤害
+			GameManager.instance.ShowText((-this.damage).ToString(), 100, Color.red, target.transform.position + new Vector3(0.5f, 1.75f, 0), Vector3.up, 2.0f);
+		}
+	}
+	private void AttackTo(Character target)
+	{
+		Debug.Log("Attack to " + target.name);
+		target.GetDamaged(this.damage);
+
+		Vector3 direction = (target.transform.position - transform.position).normalized;
+		Vector2 headingDirection = new Vector2(direction.x * speed*2, direction.y * speed*2);
+
+		// 击退
+		Rigidbody2D targetRb = target.GetRigidbody();
+		if (targetRb != null)
+		{
+			targetRb.AddForce(direction * pushForce, ForceMode2D.Impulse);
+		}
+
 		if (this.moveAble)
 		{
-			Vector3 direction = (target.transform.position - transform.position).normalized;
-			Vector2 headingDirection = new Vector2(direction.x * speed*2, direction.y * speed*2);
 			this.rb.linearVelocity = headingDirection;
 		}
 	}
 
 	protected virtual void OnCollisionStay2D(Collision2D collision)
 	{
-		if (collision.gameObject.CompareTag("Player"))
-		{
-			Damageable target = collision.gameObject.GetComponent<Damageable>();
-			
-			if (Time.time > this.attackRate + this.lastAttack)
-			{
-				target.GetDamaged(this.damage);
-
-				// Print damage
-				GameManager.instance.ShowText((-this.damage).ToString(), 100, Color.red, collision.transform.position + new Vector3(0.5f, 1.75f, 0), Vector3.up, 2.0f);
-
-				this.lastAttack = Time.time;
-			}
-		}
+		// this.Attack(target);
+		
 	}
 }
