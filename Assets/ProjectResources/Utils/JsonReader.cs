@@ -50,13 +50,7 @@ public static class JsonReader
         return ReadJsonFile<T>(filePath);
     }
 
-    /// <summary>
-    /// 【新增】修改工作流中指定节点的输入参数（如动态修改prompt、seed）
-    /// </summary>
-    /// <param name="workflow">工作流节点字典</param>
-    /// <param name="nodeId">节点ID（如6/7）</param>
-    /// <param name="paramKey">参数名（如text/seed）</param>
-    /// <param name="value">新值</param>
+    
     public static void ModifyNodeInput(Dictionary<string, Node> workflow, string nodeId, string paramKey, object value)
     {
         if (workflow == null || !workflow.ContainsKey(nodeId))
@@ -88,69 +82,3 @@ public static class JsonReader
     }
 }
 
-
-
-
-
-
-
-
-
-// using System;
-// using System.IO;
-// using UnityEngine;
-// using Newtonsoft.Json;
-// using System.Collections.Generic;
-
-// public class JsonReader
-// {
-    
-//     public static T ReadJsonFile<T>(string filePath)
-//     {
-//         try
-//         {
-//             if (!File.Exists(filePath))
-//             {
-//                 Debug.LogError($"JSON文件不存在: {filePath}");
-//                 return default;
-//             }
-
-//             string jsonContent = File.ReadAllText(filePath);
-//             T result = JsonConvert.DeserializeObject<T>(jsonContent);
-//             return result;
-//         }
-//         catch (Exception e)
-//         {
-//             Debug.LogError($"读取JSON文件失败: {e.Message}");
-//             return default;
-//         }
-//     }
-
-   
-//     public static Dictionary<string, Node> ReadWorkflowJson()
-//     {
-//         string filePath = Path.Combine(Application.dataPath, "ProjectResources/Entity/Generator/workflow/w1.json");
-//         return ReadJsonFile<Dictionary<string, Node>>(filePath);
-//     }
-
-    
-//     public static T ReadJsonFromRelativePath<T>(string relativePath)
-//     {
-//         string filePath = Path.Combine(Application.dataPath, relativePath);
-//         return ReadJsonFile<T>(filePath);
-//     }
-// }
-
-// [System.Serializable]
-// public class Node
-// {
-//     public Dictionary<string, object> inputs;
-//     public string class_type;
-//     public Meta _meta;
-// }
-
-// [System.Serializable]
-// public class Meta
-// {
-//     public string title;
-// }

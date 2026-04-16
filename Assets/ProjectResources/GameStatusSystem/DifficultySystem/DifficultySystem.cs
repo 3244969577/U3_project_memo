@@ -27,10 +27,10 @@ namespace GameStatusSystem.DifficultySystem
             // 1. 获取快照（第一层）
             var snapshot = _playerStatus.GetSnapshot();
 
-            // 2. 难度评估（第二层！！！）
+            // 2. 难度评估（第二层）
             var evaluation = DifficultyEvaluator.Evaluate(snapshot, settings);
 
-            // 3. 平滑更新难度（第三层逻辑）
+            // 3. 平滑更新难度（第三层）
             _currentDifficulty = Mathf.Lerp(
                 _currentDifficulty,
                 evaluation.RecommendedDifficulty,
@@ -38,7 +38,8 @@ namespace GameStatusSystem.DifficultySystem
             );
 
             Debug.Log($"难度评估：{evaluation.TotalScore:0} → 难度：{_currentDifficulty:0.00}");
-            // 4. 更新全局难度参数
+            
+            // 4. 更新全局难度参数（第四层）
             GlobalDifficultyLevel.UpdateDifficulty(_currentDifficulty);
         }
     }

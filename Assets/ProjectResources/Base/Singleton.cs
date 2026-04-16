@@ -20,5 +20,6 @@ public class Singleton : MonoBehaviour
             return _Instance;
         }
     }
+    public static Singleton Instance => instance;
 
 }

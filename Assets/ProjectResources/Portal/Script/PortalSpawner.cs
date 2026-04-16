@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using GameStatusSystem.DifficultyApply;
 
 public class PortalSpawner : MonoBehaviour
 {
@@ -31,20 +32,20 @@ public class PortalSpawner : MonoBehaviour
             spawnTimer += Time.deltaTime;
             if (spawnTimer >= spawnInterval)
             {
-                SpawnPortal();
+                SpawnPortals();
                 spawnTimer = 0f;
             }
 
             // 手动触发逻辑
             if (Input.GetKeyDown(spawnKey))
             {
-                SpawnPortal();
+                SpawnPortals();
                 Debug.Log("手动触发Portal生成");
             }
         }
     }
 
-    private void SpawnPortal()
+    private void SpawnPortals()
     {
         if (portalPrefab == null)
         {
@@ -52,12 +53,35 @@ public class PortalSpawner : MonoBehaviour
             return;
         }
 
-        // 计算玩家附近圆周上的随机位置
-        Vector3 spawnPosition = GetRandomPositionOnCircle(player.transform.position, spawnDistance);
+        // 计算当前难度下的传送门数量
+        int portalCount = CalculatePortalCount();
+        Debug.Log($"当前难度下生成{portalCount}个传送门");
+        
+        // 生成多个传送门
+        for (int i = 0; i < portalCount; i++)
+        {
+            // 计算玩家附近圆周上的随机位置
+            Vector3 spawnPosition = GetRandomPositionOnCircle(player.transform.position, spawnDistance);
 
-        // 生成Portal
-        GameObject portal = Instantiate(portalPrefab, spawnPosition, Quaternion.identity);
-        Debug.Log($"生成Portal在位置: {spawnPosition}");
+            // 生成Portal
+            GameObject portal = Instantiate(portalPrefab, spawnPosition, Quaternion.identity);
+            Debug.Log($"生成Portal在位置: {spawnPosition}");
+        }
+    }
+
+    /// <summary>
+    /// 计算当前难度下的传送门数量
+    /// </summary>
+    /// <returns>传送门数量</returns>
+    private int CalculatePortalCount()
+    {
+        // 根据难度等级计算传送门数量上限N
+        float difficulty = GlobalDifficultyLevel.CurrentDifficultyLevel;    // 1~5
+        int maxPortalCount = Mathf.Max(1, Mathf.FloorToInt(difficulty));
+        
+        // 实际数量为N/2~N之间的随机值
+        int minCount = Mathf.Max(1, maxPortalCount / 2);
+        return Random.Range(minCount, maxPortalCount + 1);
     }
 
     /// <summary>

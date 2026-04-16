@@ -56,10 +56,19 @@ public static class FungusNodeBuilder
         // 其他节点使用 Node_{id} 格式
         block.BlockName = node.id == "1" ? $"Node_{npcName}" : $"Node_{node.id}";
         
-        // ① 添加对话命令
-        Say say = AddCommandToBlock<Say>(block);
-        say.SetStandardText(node.text);
-        // 设置角色需要通过Character对象，这里简化处理
+        // 按换行符分割文本为多个句子
+        string[] sentences = node.text.Split('\n');
+        
+        // 为每个句子创建一个 Say 命令
+        foreach (string sentence in sentences)
+        {
+            // 跳过空句子
+            if (!string.IsNullOrWhiteSpace(sentence))
+            {
+                Say say = AddCommandToBlock<Say>(block);
+                say.SetStandardText(sentence.Trim());
+            }
+        }
 
         return block;
     }

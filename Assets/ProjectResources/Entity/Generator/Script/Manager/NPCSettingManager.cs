@@ -66,8 +66,6 @@ public class NPCSettingManager : MonoBehaviour
             OnGenerateSuccess,
             OnGenerateFailed
         );
-
-        
     }
 
     /// <summary>

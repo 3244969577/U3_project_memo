@@ -653,11 +653,61 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5798997227077817663, guid: 9c9583637de063d47a827ea17c0b1bdc, type: 3}
   m_PrefabInstance: {fileID: 2138255534}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &323138518 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8225747988841021136, guid: 28fb60acbcea32149a76e7296cccf6cd, type: 3}
+  m_PrefabInstance: {fileID: 30441056}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &337169464 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8225747988841021141, guid: 28fb60acbcea32149a76e7296cccf6cd, type: 3}
   m_PrefabInstance: {fileID: 30441056}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &344221658
+GameObject:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 344221660}
+  - component: {fileID: 344221659}
+  m_Layer: 0
+  m_Name: _FungusState
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &344221659
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 344221658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61dddfdc5e0e44ca298d8f46f7f5a915, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungus::Fungus.FungusState
+  selectedFlowchart: {fileID: 0}
+--- !u!4 &344221660
+Transform:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 344221658}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &416680027
 GameObject:
   m_ObjectHideFlags: 0
@@ -1214,6 +1264,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FloatingTextManager
   textPrefab: {fileID: 2522313012209085200, guid: 3e90e5da84170d04cac8cd5678a5d450, type: 3}
+  canvas: {fileID: 0}
 --- !u!224 &685465469
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1648,9 +1699,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aba4665d662944941a90d8b9e5bd5345, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  player: {fileID: 1294763979}
+  crosshair: {fileID: 323138518}
   gameOverUI: {fileID: 1062240120}
   gameWinUI: {fileID: 1334441189}
-  player: {fileID: 1661320458}
+  flowchart: {fileID: 0}
+  isPaused: 0
   floatingTextManager: {fileID: 685465468}
   playerHealth: 0
   playerSkin: 0
@@ -2947,7 +3001,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraRescale
   transitionSpeed: 5
   zoomMultiplier: 2
-  targetObject: {fileID: 337169464}
 --- !u!20 &1493557462 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 8225747989239976452, guid: 28fb60acbcea32149a76e7296cccf6cd, type: 3}
@@ -3140,17 +3193,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainDetector
   CheckInterval: 0.5
---- !u!114 &1661320458 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 376676914575079358, guid: 5824b8b9136ffce4e979c16b90398b3e, type: 3}
-  m_PrefabInstance: {fileID: 1429098414}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1294763979}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e9632c75a13174d9fbd9889491c8227d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1688276654
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3886,3 +3928,4 @@ SceneRoots:
   - {fileID: 1627575436}
   - {fileID: 471205834}
   - {fileID: 736783989}
+  - {fileID: 344221660}

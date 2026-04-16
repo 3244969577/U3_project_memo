@@ -195,7 +195,6 @@ public class ChunkManager : MonoBehaviour
             }
         }
         
-        // 按顺序执行，不使用优先级排序
         
         // 初始化每个生成器
         foreach (var generator in _chunkGenerators)
