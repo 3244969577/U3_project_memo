@@ -115,7 +115,6 @@ GameObject:
   - component: {fileID: 8225747989239976699}
   - component: {fileID: 8225747989239976452}
   - component: {fileID: 8225747989239976454}
-  - component: {fileID: 8225747989239976453}
   - component: {fileID: 8703801203458589894}
   m_Layer: 0
   m_Name: Main Camera
@@ -199,19 +198,6 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8225747989239976455}
   m_Enabled: 1
---- !u!114 &8225747989239976453
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8225747989239976455}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13d0e62721e731a47916713e45e4ef50, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lerpSpeed: 1
 --- !u!114 &8703801203458589894
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -221,9 +207,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 8225747989239976455}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b9b6f4441bf0c0740857ff2dcdecf5e8, type: 3}
+  m_Script: {fileID: 11500000, guid: 47f0a094b53d0ba4884ea61c0cdaab2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraRescale
-  transitionSpeed: 5
-  zoomMultiplier: 2
-  targetObject: {fileID: 0}

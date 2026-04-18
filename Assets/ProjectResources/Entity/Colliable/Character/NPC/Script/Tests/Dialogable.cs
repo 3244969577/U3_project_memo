@@ -70,7 +70,7 @@ public class Dialogable : MonoBehaviour
             // 交互逻辑
             flowchart.ExecuteBlock($"Node_{config.npcName}");
             Debug.Log($"触发交互：{config.npcName}");
-            GameManager.instance.SetNPCInteracting(gameObject);
+            GameManager.Instance.SetNPCInteracting(gameObject);
 
             HidePrompt();
         }

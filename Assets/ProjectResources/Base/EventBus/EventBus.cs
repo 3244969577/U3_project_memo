@@ -8,6 +8,7 @@ public static class EventBus<T> where T : IEvent {
     public static void Deregister(EventBinding<T> binding) => bindings.Remove(binding);
 
     public static void Raise(T @event) {
+        Debug.Log($"Raising {typeof(T).Name} event");
         var snapshot = new HashSet<IEventBinding<T>>(bindings);
 
         foreach (var binding in snapshot) {
@@ -19,7 +20,7 @@ public static class EventBus<T> where T : IEvent {
     }
 
     static void Clear() {
-        Debug.Log($"Clearing {typeof(T).Name} bindings");
+        // Debug.Log($"Clearing {typeof(T).Name} bindings");
         bindings.Clear();
     }
 }

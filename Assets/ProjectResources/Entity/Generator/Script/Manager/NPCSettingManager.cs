@@ -8,8 +8,6 @@ using TMPro;
 public class NPCSettingManager : MonoBehaviour
 {
     [Header("配置")]
-    // public string positivePrompt = "(rpgchara), 1girl, white background, high quality";
-    // public string negativePrompt = "low quality, blurry, ugly, watermark";
     public bool useLLMForDialogue = true; // 控制是否使用LLM生成对话，调试时可以关闭以节省token
 
     [Header("UI显示")]

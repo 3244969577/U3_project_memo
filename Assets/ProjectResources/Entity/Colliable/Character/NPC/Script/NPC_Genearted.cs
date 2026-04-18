@@ -5,8 +5,6 @@ using Fungus;
 
 public class NPC_Genearted : Collidable
 {
-    public Dialog dialog;
-
     [Header("对话组件")]
     public NPCDialogue npcDialogue; // 挂载在角色上
     public NPCDialogueConfig npcDialogueConfig; // 挂载在子物体上

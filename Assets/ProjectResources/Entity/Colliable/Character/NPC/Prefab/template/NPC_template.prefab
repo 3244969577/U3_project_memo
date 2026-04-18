@@ -292,8 +292,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d29a48d24b3f2424f81dd2ec20a82c1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPC_Genearted
-  dialog:
-    lines: []
   npcDialogue: {fileID: 3798780064560597657}
   npcDialogueConfig: {fileID: 1550255221453795398}
   fungusCharacter: {fileID: 7410276298326039548}
@@ -367,8 +365,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6312520490713661983}
   - component: {fileID: 1886843357063660897}
-  - component: {fileID: 5734166514032420295}
-  - component: {fileID: 2795029024338184035}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -428,44 +424,3 @@ MonoBehaviour:
   hideCommands: []
   luaEnvironment: {fileID: 0}
   luaBindingName: flowchart
---- !u!114 &5734166514032420295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8561425282788960365}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3d3d73aef2cfc4f51abf34ac00241f60, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  nodeRect:
-    serializedVersion: 2
-    x: 67
-    y: 70
-    width: 110.192
-    height: 40
-  tint: {r: 1, g: 1, b: 1, a: 1}
-  useCustomTint: 0
-  itemId: 0
-  blockName: New Block
-  description: 
-  eventHandler: {fileID: 2795029024338184035}
-  commandList: []
-  suppressAllAutoSelections: 0
---- !u!114 &2795029024338184035
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8561425282788960365}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2f6487d21a03404cb21b245f0242e79, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  parentBlock: {fileID: 5734166514032420295}
-  suppressBlockAutoSelect: 0
-  waitForFrames: 1

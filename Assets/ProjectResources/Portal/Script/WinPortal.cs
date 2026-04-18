@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+using GameStatusSystem.PlayerStatus.Events;
 public class WinPortal : Collidable
 {
 
@@ -17,6 +17,7 @@ public class WinPortal : Collidable
 
     private void Teleport()
     {
-        GameManager.instance.WinScene();
+        // GameManager.instance.WinScene();
+        EventBus<GameWinEvent>.Raise(new GameWinEvent());
     }
 }

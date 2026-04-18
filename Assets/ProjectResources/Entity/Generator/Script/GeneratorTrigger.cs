@@ -20,12 +20,12 @@ public class GeneratorTrigger : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.E))
             {
                 settingPanel.SetActive(true);
-                GameManager.Instance.FreezeAllMovement();
+                GameManager.Instance.PauseGame();
             }
             else if (Input.GetKeyDown(KeyCode.Escape))
             {
                 settingPanel.SetActive(false);
-                GameManager.Instance.UnFreezeAllMovement();
+                GameManager.Instance.ResumeGame();
             }
         }
         else

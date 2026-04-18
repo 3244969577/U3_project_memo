@@ -3,11 +3,8 @@ using Fungus;
 using System.Collections.Generic;
 using System.Collections;
 
-public class FungusDialogRenderer : MonoBehaviour
-{
-    private static FungusDialogRenderer instance;
-    public static FungusDialogRenderer Instance => instance;
-    
+public class FungusDialogRenderer : Singleton<FungusDialogRenderer>
+{   
     private Flowchart targetFlowchart;
     private int currentLineIndex = 0;
     private List<string> currentLines;
@@ -16,11 +13,8 @@ public class FungusDialogRenderer : MonoBehaviour
     private Sprite currentPortrait;
     
     private void Awake()
-    {
-        if (instance == null)
-        {
-            instance = this;
-        }
+    {   
+        base.Awake();
     }
     
     private void Start()

@@ -4,33 +4,15 @@ using GameStatusSystem.PlayerStatus.Events;
 
 public class Boss : Enemy
 {
-    /// <summary>
-    /// Boss死亡时触发的事件
-    /// - 可以用于触发传送门生成或其他游戏事件
-    /// </summary>
     public event EventHandler OnDeathTrigger;
-
-	/// <summary>
-	/// 死亡动画触发名称
-	/// </summary>
 	const string DEATH_ANIM = "onDeath";
-
-	/// <summary>
-	/// 子弹发射的力量
-	/// - 影响子弹的飞行速度和距离
-	/// </summary>
 	public float shootingForce = 20f;
-
-	/// <summary>
-	/// 子弹预制体
-	/// - Boss攻击时发射的子弹类型
-	/// </summary>
 	public GameObject bulletPrefab;
 	
 	public override void Start()
     {
 		base.Start();
-		SoundManager.instance.PlaySong("BattleTheme");
+		SoundManager.Instance.PlaySong("BattleTheme");
     }
 
 	// Trigger the trigger zone
@@ -65,7 +47,7 @@ public class Boss : Enemy
 				obj.transform.position = transform.position;
 			}	
 		}
-		SoundManager.instance.StopSound("BattleTheme");
+		SoundManager.Instance.StopSound("BattleTheme");
 
 		InvokeTrigger();
 		Destroy(gameObject);

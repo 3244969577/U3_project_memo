@@ -1,24 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using GameStatusSystem.PlayerStatus.Events;
 
-/// <summary>
-/// 玩家控制器类 - 处理玩家所有核心功能
-/// 功能概述：
-/// 1. 单例模式管理 - 确保游戏中只有一个玩家实例
-/// 2. 背包系统管理 - 初始化和管理玩家背包
-/// 3. 输入处理 - 处理键盘输入和鼠标位置
-/// 4. 移动控制 - 基于输入控制玩家移动
-/// 5. 视角旋转 - 根据鼠标位置控制玩家朝向
-/// 6. 武器系统 - 装备、切换和管理武器
-/// 7. 物品收集 - 将收集品添加到背包
-/// 8. 死亡处理 - 触发死亡动画和场景重试
-/// 9. UI交互 - 控制背包UI的显示/隐藏
-/// </summary>
+
 public class Player : Character
 {
 
 	const string TAG = "Player";      // 玩家标签
-	const string DEATH_ANIM = "onDeath";      // 死亡动画名称
+	const string DEATH_ANIM = "Die";      // 死亡动画名称
 
 	private Vector2 movement;      // 移动方向
 	private Weapon weapon;      // 当前装备的武器
@@ -154,7 +143,8 @@ public class Player : Character
 		{
 			Destroy(this.weapon.gameObject);
 		}
-		GameManager.instance.RetryScene();
+		Debug.Log($"Player {this.name} died!");
+		EventBus<PlayerDieEvent>.Raise(new PlayerDieEvent());
 	}
 
     /// <summary>

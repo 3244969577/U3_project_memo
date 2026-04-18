@@ -14,7 +14,7 @@ public class CoinCounter : MonoBehaviour
 
     private void Update()
     {
-        int coinAmount = GameManager.instance.GetCoin();
+        int coinAmount = GameManager.Instance.GetCoin();
         text.text = "x" + coinAmount.ToString();
     }
 }

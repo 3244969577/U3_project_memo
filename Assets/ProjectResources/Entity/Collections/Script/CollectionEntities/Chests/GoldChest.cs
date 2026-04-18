@@ -13,7 +13,7 @@ public class GoldChest : Chest
         {
             collected = true;
             animator.SetTrigger(COLLECTED_ANIM);
-            SoundManager.instance.PlaySound("Chest");
+            SoundManager.Instance.PlaySound("Chest");
             // 在半径5的范围内随机生成amount个金币
             for (int i = 0; i < amount; i++)
             {
@@ -26,17 +26,4 @@ public class GoldChest : Chest
             
         }
     }
-
-    // protected override void OnCollect()
-    // {
-    //     if (!collected)
-    //     {
-    //         collected = true;
-    //         animator.SetTrigger(COLLECTED_ANIM);
-    //         SoundManager.instance.PlaySound("Chest");
-    //         string text = "+" + amount.ToString() + " coin";
-    //         GameManager.instance.ShowText(text, 100, Color.yellow, transform.position + new Vector3(0.5f, 1.75f, 0), Vector3.up, 2.0f);
-    //         GameManager.instance.coin += amount;
-    //     }
-    // }
 }

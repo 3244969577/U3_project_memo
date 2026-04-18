@@ -2,10 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NPCManager : ManagerBase
+public class NPCManager : Singleton<NPCManager>
 {
-    public static NPCManager Instance => (NPCManager)instance;
 
+    private void Awake()
+    {
+        base.Awake();
+    }
+    
     private Dictionary<string, GameObject> generatedNPCs = new Dictionary<string, GameObject>();
 
     public void RegisterNPC(string name, GameObject npc)

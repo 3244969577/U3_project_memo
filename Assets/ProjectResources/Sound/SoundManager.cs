@@ -4,25 +4,15 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 
-public class SoundManager : MonoBehaviour
+public class SoundManager : Singleton<SoundManager>
 {
-    public static SoundManager instance;
     List<Sound> sounds = new List<Sound>();
 
     private void Awake()
     {
-
-        if (SoundManager.instance != null)
-        {
-            Destroy(gameObject);
-        }
-        else
-        {
-            GetAllSoundsFromFolder();
-        }
-        instance = this;
+        base.Awake();
+        GetAllSoundsFromFolder();
         // Prevent being destroyed between scenes
-        DontDestroyOnLoad(gameObject);
         PlaySoundTrackForScene();
     }
 

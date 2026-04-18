@@ -5,7 +5,6 @@ using Fungus;
 
 public class NPC : Collidable
 {
-    public Dialog dialog;
 
     [Header("对话组件")]
     public NPCDialogue npcDialogue; // 挂载在角色上

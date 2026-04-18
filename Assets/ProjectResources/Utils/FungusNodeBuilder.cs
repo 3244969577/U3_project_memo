@@ -14,12 +14,12 @@ public static class FungusNodeBuilder
     {
         Debug.Log($"开始构建节点式对话流程，对话节点数：{config.dialogue.Length}");
         
-        var existingBlocks = flowchart.GetComponents<Block>();
+        // var existingBlocks = flowchart.GetComponents<Block>();
 
-        for (int i = existingBlocks.Length - 1; i >= 0; i--)
-        {
-            Object.DestroyImmediate(existingBlocks[i]);
-        }
+        // for (int i = existingBlocks.Length - 1; i >= 0; i--)
+        // {
+        //     Object.DestroyImmediate(existingBlocks[i]);
+        // }
         
         // 字典：对话ID → Fungus块（快速跳转）
         Dictionary<string, Block> nodeBlockDict = new Dictionary<string, Block>();

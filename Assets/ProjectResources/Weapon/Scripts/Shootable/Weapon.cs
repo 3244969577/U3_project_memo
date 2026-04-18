@@ -51,7 +51,7 @@ public abstract class Weapon : Collectible
 
             this.Attach(player);
             player.EquipWeapon(this);
-            SoundManager.instance.PlaySound("Pickup");
+            SoundManager.Instance.PlaySound("Pickup");
 
             player.AddItemToInventory(this);
             gameObject.GetComponent<CircleCollider2D>().enabled = false;

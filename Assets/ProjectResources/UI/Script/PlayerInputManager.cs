@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerInputManager : MonoBehaviour
+public class PlayerInputManager : Singleton<PlayerInputManager>
 {
-    public static PlayerInputManager instance;
     
     [Header("UI Components")]
     public GameObject inputPanel;
@@ -24,15 +23,7 @@ public class PlayerInputManager : MonoBehaviour
     
     private void Awake()
     {
-        if (instance == null)
-        {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        base.Awake();
     }
     
     private void Start()
@@ -47,7 +38,6 @@ public class PlayerInputManager : MonoBehaviour
         if (inputField != null)
         {
             inputField.lineType = InputField.LineType.MultiLineNewline;
-            inputField.onEndEdit.AddListener(OnEndEdit);
         }
         
         HideInput();
@@ -55,30 +45,12 @@ public class PlayerInputManager : MonoBehaviour
     
     private void Update() 
     {
-        // 手动触发
-        // if (Input.GetKeyDown(KeyCode.O) && !isInputActive)
-        // {
-        //     ShowInput();
-        // }
         
         // 按下 ESC 键退出输入面板
         if (Input.GetKeyDown(KeyCode.Escape) && isInputActive)
         {
             HideInput();
         }
-        
-        // if (isInputActive && inputField != null && Input.GetKeyDown(KeyCode.Return))
-        // {
-        //     if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-        //     {
-        //         // inputField.text += "\n";
-        //         inputField.MoveTextEnd(false);
-        //     }
-        //     else
-        //     {
-        //         SubmitInput();
-        //     }
-        // }
     }
     
     public void ShowInput()
@@ -93,7 +65,7 @@ public class PlayerInputManager : MonoBehaviour
                 inputField.ActivateInputField();
             }
             
-            GameManager.instance?.FreezeAllMovement();
+            GameManager.Instance.FreezeAllMovement();
         }
     }
     
@@ -109,7 +81,7 @@ public class PlayerInputManager : MonoBehaviour
                 inputField.text = "";
             }
             
-            GameManager.instance?.UnFreezeAllMovement();
+            GameManager.Instance.UnFreezeAllMovement();
         }
     }
     
@@ -138,7 +110,7 @@ public class PlayerInputManager : MonoBehaviour
         
         Debug.Log($"Player input: {input}");
         OnInputSubmitted?.Invoke(input);
-        var npcInteracting = GameManager.instance?.GetNPCInteracting();
+        var npcInteracting = GameManager.Instance.GetNPCInteracting();
         npcInteracting?.GetComponent<NPCDialogue>()?.SendPlayerMessage(input, 
             (reply) => {
                 Debug.Log($"NPC reply: {reply}");
@@ -152,11 +124,6 @@ public class PlayerInputManager : MonoBehaviour
 
         
         HideInput();
-    }
-    
-    private void OnEndEdit(string text)
-    {
-        // 不在这里处理回车键，因为我们在Update中处理了
     }
     
     private void AddToHistory(string input)

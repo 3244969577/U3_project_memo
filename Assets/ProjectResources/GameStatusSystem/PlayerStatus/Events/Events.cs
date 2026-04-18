@@ -8,6 +8,9 @@ namespace GameStatusSystem.PlayerStatus.Events
         public int score;
     }
 
+    // 玩家死亡事件
+    public struct PlayerDieEvent : IEvent { }
+
     // 玩家受击事件
     public struct PlayerHitEvent : IEvent {
         public GameObject attacker;
@@ -29,6 +32,18 @@ namespace GameStatusSystem.PlayerStatus.Events
     // 玩家获得装备事件
     public struct ObtainEquipmentEvent : IEvent {
         public GameObject equipment;
+    }
+
+
+    public struct QuitEvent : IEvent { }
+    public struct RetryEvent : IEvent { }
+    public struct GameOverEvent : IEvent { }
+    public struct GameWinEvent : IEvent { }
+
+
+    // 生成NPC
+    public struct NPCGeneratedEvent : IEvent {
+        public GameObject npc;
     }
 }
 

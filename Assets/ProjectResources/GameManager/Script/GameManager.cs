@@ -1,22 +1,17 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Fungus;
+using GameStatusSystem.PlayerStatus.Events;
+using System.Runtime.CompilerServices;
 
-public class GameManager : MonoBehaviour
+public class GameManager : Singleton<GameManager>
 {
+    public SceneData sceneData;
+    public Flowchart flowchart;
     public GameObject player;
     public GameObject crosshair;
-    public GameObject gameOverUI;
-    public GameObject gameWinUI;
-
     private GameObject NPCInteracting;  // 正在与Player对话的NPC
-
-    public static GameManager instance;
-    public static GameManager Instance => instance;
-
-    public Flowchart flowchart;
 
     [Header("游戏暂停设置")]
     [Tooltip("当前游戏是否处于暂停状态")]
@@ -26,39 +21,39 @@ public class GameManager : MonoBehaviour
     [Tooltip("正常游戏时的时间缩放值")]
     private float normalTimeScale = 1f; 
 
+
+    private EventBinding<PlayerDieEvent> playerDieBinding;
+    private EventBinding<QuitEvent> gameOverBinding;
+    private EventBinding<RetryEvent> retryBinding;
+
     private void Awake()
     {
-        if (GameManager.instance != null)
-        {
-            Destroy(gameObject);
-        }
-        instance = this;
-        Debug.Assert(instance != null, "GameManager instance is null");
-        DontDestroyOnLoad(gameObject);
+        base.Awake();
+
+        playerDieBinding = new EventBinding<PlayerDieEvent>(handlePlayerDie);
+        gameOverBinding = new EventBinding<QuitEvent>(handleQuit);
+        retryBinding = new EventBinding<RetryEvent>(handleRetry);
     }
+    private void OnEnable()
+    {
+        EventBus<PlayerDieEvent>.Register(playerDieBinding);
+        EventBus<QuitEvent>.Register(gameOverBinding);
+        EventBus<RetryEvent>.Register(retryBinding);
+    }
+    private void OnDisable()
+    {
+        EventBus<PlayerDieEvent>.Deregister(playerDieBinding);
+        EventBus<QuitEvent>.Deregister(gameOverBinding);
+        EventBus<RetryEvent>.Deregister(retryBinding);
+    }
+
     
     public FloatingTextManager floatingTextManager;
     [HideInInspector]
-    public float playerHealth;
-    [HideInInspector]
-    public int playerSkin;
-    [HideInInspector]
-    public int playerWeapon;
-    [HideInInspector]
     public int coin = 0;
-    [HideInInspector]
-    public int speed;
-
-    public void SetPlayerSkin(Sprite sprite)
+    public int GetCoin()
     {
-        if (player != null)
-        {
-            Player playerComponent = player.GetComponent<Player>();
-            if (playerComponent != null && playerComponent.spriteRenderer != null)
-            {
-                playerComponent.spriteRenderer.sprite = sprite;
-            }
-        }
+        return coin;
     }
 
     public void FreezeAllMovement()
@@ -84,28 +79,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-
-    public int GetCoin()
-    {
-        return this.coin;
-    }
-
-    public void SaveState()
-    {
-        Debug.Log("Save state");
-        string s = "";
-
-        s += "0" + "|";
-        s += coin.ToString();
-
-        PlayerPrefs.SetString("SaveState", s);
-    }
-
-    public void LoadState()
-    {
-        Debug.Log("Load state");
-    }
-
+    
     public FloatingText ShowText(string msg, int fontSize, Color color, Vector3 position, Vector3 motion, float duration)
     {
         Debug.Log($"ShowText: {msg}");
@@ -115,46 +89,6 @@ public class GameManager : MonoBehaviour
         } else {
             Debug.LogError("FloatingTextManager is null");
             return null;
-        }
-    }
-
-
-    public void RetryScene()
-    {
-        if (player != null)
-        {
-            player.GetComponent<Collider2D>().enabled = false;
-        }
-        this.FreezeAllMovement();
-        gameOverUI.SetActive(true);
-    }
-    
-    public void WinScene()
-    {
-        if (player != null)
-        {
-            player.GetComponent<Collider2D>().enabled = false;
-        }
-        this.FreezeAllMovement();
-        gameWinUI.SetActive(true);
-    }
-
-    public void LoadScene(int level)
-    {
-        switch (level)
-        {
-            case 0:
-                SceneManager.LoadScene("MainMenu");
-                break;
-            case 1:
-                SceneManager.LoadScene("Map1");
-                break;
-            case 2:
-                SceneManager.LoadScene("Map2");
-                break;
-            default:
-                SceneManager.LoadScene("Menu");
-                break;
         }
     }
 
@@ -208,5 +142,24 @@ public class GameManager : MonoBehaviour
     }
 
     #endregion
+
+
+    private void handlePlayerDie(PlayerDieEvent e)
+    {
+        Debug.Log("Player died!");
+        EventBus<GameOverEvent>.Raise(new GameOverEvent());
+    }
+
+    private void handleQuit(QuitEvent e)
+    {
+        Debug.Log("APPLICATION QUIT!");
+        SceneManager.LoadScene(sceneData.startSceneName);
+    }
+    private void handleRetry(RetryEvent e)
+    {
+        Debug.Log("APPLICATION RETRY!");
+        SceneManager.LoadScene(sceneData.mainGameSceneName);
+    }
+
 
 }

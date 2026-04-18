@@ -35,8 +35,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1.25}
   m_ConstrainProportionsScale: 1
   m_Children:
-  - {fileID: 1188406039280172216}
   - {fileID: 2308486431583039822}
+  - {fileID: 1188406039280172216}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &376676914575079355
@@ -202,7 +202,7 @@ Animator:
   m_GameObject: {fileID: 376676914575079296}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: eb697ce08c370034da130ead1d3b31bb, type: 2}
+  m_Controller: {fileID: 9100000, guid: 846070146db3f6d4fb4a6300a2dfdc54, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -719,10 +719,7 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3627920619584353126, guid: 8e4615a71ac2ab544be3466f7471048b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1292172295201369398}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2640024535494135471, guid: 8e4615a71ac2ab544be3466f7471048b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 3287850805262286743}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8e4615a71ac2ab544be3466f7471048b, type: 3}
 --- !u!224 &2308486431583039822 stripped
 RectTransform:
@@ -734,29 +731,12 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8033303412629991816, guid: 8e4615a71ac2ab544be3466f7471048b, type: 3}
   m_PrefabInstance: {fileID: 5355538661032953734}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7994437283326200105}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f52b3e8b9bd20fd4ab84a6894d0479af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInputManager
---- !u!1 &7994437283326200105 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2640024535494135471, guid: 8e4615a71ac2ab544be3466f7471048b, type: 3}
-  m_PrefabInstance: {fileID: 5355538661032953734}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &3287850805262286743
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7994437283326200105}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0660eb3f649b29946955ddeb5a578f11, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DoubaoApiManager
 --- !u!224 &8649801477367166176 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3627920619584353126, guid: 8e4615a71ac2ab544be3466f7471048b, type: 3}

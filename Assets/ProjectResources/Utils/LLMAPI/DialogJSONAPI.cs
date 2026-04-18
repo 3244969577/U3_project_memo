@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
 using ProjectResources.Utils.Files;
+using System.Threading.Tasks;
 
 namespace RPG.AI.Utility
 {
@@ -21,21 +22,14 @@ namespace RPG.AI.Utility
             else Destroy(gameObject);
         }
 
-        public void StartTest() {
-            Debug.Log($"StartTest");
-            
-            // 初始化时发送一个空请求，确保连接正常
-            SendChatRequest("新人冒险者，活泼的少女", 
-                (response) => {
-                    Debug.Log($"Empty response: {response}");
-            },  (error) => {
-                    Debug.LogError($"Error: {error}");
-            });
-        }
-
         public void SendChatRequest(string setting, System.Action<ChatCompletionResponse> onSuccess, System.Action<string> onFail = null)
         {
             StartCoroutine(RequestCoroutine(setting, onSuccess, onFail));
+        }
+
+        public async Task<ChatCompletionResponse> SendChatRequestAsync(string setting)
+        {
+            return await RequestAsync(setting);
         }
 
         private IEnumerator RequestCoroutine(string setting, System.Action<ChatCompletionResponse> onSuccess, System.Action<string> onFail)
@@ -93,6 +87,66 @@ namespace RPG.AI.Utility
             }
         }
 
+        private async Task<ChatCompletionResponse> RequestAsync(string setting)
+        {
+            try
+            {
+                // ==================== 请求组装逻辑（完全不变） ====================
+                ChatCompletionRequest request = new ChatCompletionRequest();
+                request.Model = "doubao-seed-2-0-pro-260215";
+                request.Stream = false;
+
+                // 系统消息
+                request.Messages.Add(new ChatMessage()
+                {
+                    Role = "system",
+                    Content = FileUtil.ReadFileAsString("Texts/APISystemSetting.md")
+                });
+
+                // 用户消息
+                request.Messages.Add(new ChatMessage()
+                {
+                    Role = "user",
+                    Content = setting
+                });
+
+                string jsonData = JsonConvert.SerializeObject(request);
+                Debug.Log($"Request JSON: {jsonData}");
+                // =================================================================
+
+                // 创建 WebRequest
+                using UnityWebRequest webRequest = new UnityWebRequest(ApiUrl, "POST");
+                byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+
+                webRequest.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                webRequest.downloadHandler = new DownloadHandlerBuffer();
+                webRequest.SetRequestHeader("Content-Type", "application/json");
+                webRequest.SetRequestHeader("Authorization", $"Bearer {ApiKey}");
+
+                // 等待请求完成
+                await webRequest.SendWebRequest();
+
+                // 处理成功
+                if (webRequest.result == UnityWebRequest.Result.Success)
+                {
+                    string responseJson = webRequest.downloadHandler.text;
+                    ChatCompletionResponse response = JsonConvert.DeserializeObject<ChatCompletionResponse>(responseJson);
+                    return response;
+                }
+                else
+                {
+                    // 失败返回 null，可自行判断
+                    Debug.LogError($"API请求失败：{webRequest.error}，返回内容：{webRequest.downloadHandler.text}");
+                    return null;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"请求异常：{e.Message}");
+                return null;
+            }
+        }
+
         public void onSuccess(string reply)
         {
             Debug.Log($"onSuccess: {reply}");
@@ -103,6 +157,14 @@ namespace RPG.AI.Utility
         }
     }
     
+
+
+
+
+
+
+
+
     // 新增：StreamOptions类（ApiCore.cs中没有）
     [System.Serializable]
     public class StreamOptions
