@@ -17,21 +17,21 @@ public class Collectible : MonoBehaviour
 
     protected virtual void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.name.Equals("Player"))
+        if (collision.gameObject.CompareTag("Player"))
         {
-            this.OnCollect();
+            this.OnCollect(collision.gameObject);
         }
     }
 
     protected virtual void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.name.Equals("Player"))
+        if (collision.gameObject.CompareTag("Player"))
         {
-            this.OnCollect();
+            this.OnCollect(collision.gameObject);
         }
     }
 
-    protected virtual void OnCollect()
+    protected virtual void OnCollect(GameObject collector)
     {
         this.collected = true;
     }

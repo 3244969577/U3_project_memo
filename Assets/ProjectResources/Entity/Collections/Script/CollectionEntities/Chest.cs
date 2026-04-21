@@ -16,7 +16,7 @@ public class Chest : Collectible
         animator = GetComponent<Animator>();
     }
 
-    protected override void OnCollect()
+    protected override void OnCollect(GameObject collector)
     {
         if (!collected)
         {

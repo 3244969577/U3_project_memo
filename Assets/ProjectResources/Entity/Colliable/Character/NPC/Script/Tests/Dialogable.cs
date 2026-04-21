@@ -18,50 +18,51 @@ public class Dialogable : MonoBehaviour
     public float promptHeight = 1.5f; // 提示显示的高度
     public float promptDuration = 3f; // 提示显示的持续时间
     
-    private GameObject promptObject;
+    public GameObject npc;
+    private GameObject promptObject; // 提示预制体
     private float promptTimer = 0f;
     private bool isPromptShowing = false;
     
     void Start()
     {   
         // 自动绑定 flowchart
-        AutoBindFlowchart();
+        // AutoBindFlowchart();
         
         // 创建提示对象
         CreatePromptObject();
     }
     
-    /// <summary>
-    /// 自动绑定 flowchart 组件
-    /// </summary>
-    private void AutoBindFlowchart()
-    {
-        // 查找子物体中的 Flowchart 组件
-        if (flowchart == null)
-        {
-            flowchart = GetComponentInChildren<Flowchart>();
-        }
+    // /// <summary>
+    // /// 自动绑定 flowchart 组件
+    // /// </summary>
+    // private void AutoBindFlowchart()
+    // {
+    //     // 查找子物体中的 Flowchart 组件
+    //     if (flowchart == null)
+    //     {
+    //         flowchart = GetComponentInChildren<Flowchart>();
+    //     }
         
-        // 如果还是找不到，尝试通过名称查找
-        if (flowchart == null && config != null)
-        {
-            string flowchartName = $"Flowchart_{config.npcName}";
-            Transform flowchartTransform = transform.Find(flowchartName);
-            if (flowchartTransform != null)
-            {
-                flowchart = flowchartTransform.GetComponent<Flowchart>();
-            }
-        }
+    //     // 如果还是找不到，尝试通过名称查找
+    //     if (flowchart == null && config != null)
+    //     {
+    //         string flowchartName = $"Flowchart_{config.npcName}";
+    //         Transform flowchartTransform = transform.Find(flowchartName);
+    //         if (flowchartTransform != null)
+    //         {
+    //             flowchart = flowchartTransform.GetComponent<Flowchart>();
+    //         }
+    //     }
         
-        if (flowchart != null)
-        {
-            Debug.Log($"✅ 自动绑定 flowchart 成功: {flowchart.name}");
-        }
-        else
-        {
-            Debug.LogWarning($"⚠️ 未找到 flowchart 组件");
-        }
-    }
+    //     if (flowchart != null)
+    //     {
+    //         Debug.Log($"✅ 自动绑定 flowchart 成功: {flowchart.name}");
+    //     }
+    //     else
+    //     {
+    //         Debug.LogWarning($"⚠️ 未找到 flowchart 组件");
+    //     }
+    // }
     
     void Update()
     {
@@ -70,7 +71,7 @@ public class Dialogable : MonoBehaviour
             // 交互逻辑
             flowchart.ExecuteBlock($"Node_{config.npcName}");
             Debug.Log($"触发交互：{config.npcName}");
-            GameManager.Instance.SetNPCInteracting(gameObject);
+            GameManager.Instance.SetNPCInteracting(npc);
 
             HidePrompt();
         }
@@ -104,10 +105,8 @@ public class Dialogable : MonoBehaviour
             HidePrompt();
         }
     }
-    
-    /// <summary>
-    /// 创建提示对象
-    /// </summary>
+
+#region 提示对象
     private void CreatePromptObject()
     {
         // 创建提示容器
@@ -148,9 +147,6 @@ public class Dialogable : MonoBehaviour
         promptObject.SetActive(false);
     }
     
-    /// <summary>
-    /// 显示提示
-    /// </summary>
     private void ShowPrompt()
     {
         if (promptObject != null)
@@ -161,10 +157,7 @@ public class Dialogable : MonoBehaviour
             UpdatePromptPosition();
         }
     }
-    
-    /// <summary>
-    /// 隐藏提示
-    /// </summary>
+
     private void HidePrompt()
     {
         if (promptObject != null)
@@ -175,9 +168,6 @@ public class Dialogable : MonoBehaviour
         }
     }
     
-    /// <summary>
-    /// 更新提示位置
-    /// </summary>
     private void UpdatePromptPosition()
     {
         if (promptObject != null)
@@ -185,4 +175,5 @@ public class Dialogable : MonoBehaviour
             promptObject.transform.position = transform.position + new Vector3(0, promptHeight, 0);
         }
     }
+#endregion
 }

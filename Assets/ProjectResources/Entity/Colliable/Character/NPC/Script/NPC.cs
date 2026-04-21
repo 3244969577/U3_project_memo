@@ -43,7 +43,7 @@ public class NPC : Collidable
         // 只有在启用移动且没有交互时处理移动AI
         if (enableMovement)
         {
-            movementAI?.HandleAI();
+            // movementAI?.HandleAI();
         }
     }
     

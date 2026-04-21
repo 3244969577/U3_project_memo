@@ -8,36 +8,32 @@ using System.Collections;
 /// </summary>
 public abstract class Character : Damageable
 {
-    public float shield;
     public float speed;
     public float damage;
+
     [HideInInspector]
     public SpriteRenderer spriteRenderer;
     protected Animator animator;
-
     protected Rigidbody2D rb;
 
     protected bool moveAble = true;
 
+
+# region virtual methods
     public virtual void Move() { }
     public virtual void Attack(Character target) { }
-    public virtual void Die() { }
-    public override void Update()
-    {
-        base.Update();
-        if (this.healthBar.GetHealth() <= 0f)
-        {
-            this.Die();
-        }
-    }
+# endregion
 
-    public override void Start()
+
+    protected override void Awake()
     {
-        base.Start();
+        base.Awake();
         this.rb = GetComponent<Rigidbody2D>();
         this.animator = GetComponent<Animator>();
         this.spriteRenderer = GetComponent<SpriteRenderer>();
     }
+
+    
 
     public virtual Vector3 GetPosition()
     {

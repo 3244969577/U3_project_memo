@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCSpriteToolAsync
   npc_Prefab: {fileID: 8022298185617758018, guid: 50b7d8d822eecff4c990c8dc1a0f6d3c, type: 3}
+  scale: 6
 --- !u!1001 &9162472081530806268
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -161,7 +162,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 467fea1c1f6b74540ae8b444cfcb39c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCSettingManagerAsync
-  useLLMForDialogue: 1
+  useLLMForDialogue: 0
   resultImage: {fileID: 8482354119881477458}
   startButton: {fileID: 1677384384817752854}
   statusText: {fileID: 2393160428620234104}

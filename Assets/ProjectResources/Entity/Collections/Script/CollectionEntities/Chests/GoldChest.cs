@@ -7,7 +7,7 @@ public class GoldChest : Chest
     public int amount;
     const string COLLECTED_ANIM = "onCollected";
 
-    protected override void OnCollect()
+    protected override void OnCollect(GameObject collector)
     {
         if (!collected)
         {

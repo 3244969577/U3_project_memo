@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 using System.Threading.Tasks;
+using System.Resources;
 
 public class DoubaoApiManager : Singleton<DoubaoApiManager>
 {
@@ -34,6 +35,7 @@ public class DoubaoApiManager : Singleton<DoubaoApiManager>
         // -------------------------- 仅修改这里的请求组装逻辑 --------------------------
         // 把原有ChatMessage列表自动转换成方舟要求的input结构
         ArkChatCompletionRequest request = new ArkChatCompletionRequest();
+
         foreach (var msg in messages)
         {
             // 每条消息转成ArkInputItem，纯文本默认封装成input_text类型
@@ -102,6 +104,7 @@ public class DoubaoApiManager : Singleton<DoubaoApiManager>
                     }
                 });
             }
+
 
             string jsonData = JsonConvert.SerializeObject(request);
             Debug.Log($"Request JSON: {jsonData}");

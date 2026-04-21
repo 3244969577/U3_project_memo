@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 
 public class Boss : Enemy
 {
@@ -48,9 +48,12 @@ public class Boss : Enemy
 			}	
 		}
 		SoundManager.Instance.StopSound("BattleTheme");
+		
+		// 触发Boss击杀事件
+		EventBus<BossKilledEvent>.Raise(new BossKilledEvent{boss = gameObject});
 
 		InvokeTrigger();
-		Destroy(gameObject);
+		Destroy(gameObject, 1f);
 	}
 
 	public override void Attack(Character target)

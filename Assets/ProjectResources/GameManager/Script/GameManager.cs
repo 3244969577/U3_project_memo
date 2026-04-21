@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Fungus;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 using System.Runtime.CompilerServices;
 
 public class GameManager : Singleton<GameManager>
@@ -25,6 +25,8 @@ public class GameManager : Singleton<GameManager>
     private EventBinding<PlayerDieEvent> playerDieBinding;
     private EventBinding<QuitEvent> gameOverBinding;
     private EventBinding<RetryEvent> retryBinding;
+    private EventBinding<GamePauseEvent> pauseBinding;
+    private EventBinding<GameResumeEvent> resumeBinding;
 
     private void Awake()
     {
@@ -33,18 +35,25 @@ public class GameManager : Singleton<GameManager>
         playerDieBinding = new EventBinding<PlayerDieEvent>(handlePlayerDie);
         gameOverBinding = new EventBinding<QuitEvent>(handleQuit);
         retryBinding = new EventBinding<RetryEvent>(handleRetry);
+        pauseBinding = new EventBinding<GamePauseEvent>(PauseGame);
+        resumeBinding = new EventBinding<GameResumeEvent>(ResumeGame);
     }
+
     private void OnEnable()
     {
         EventBus<PlayerDieEvent>.Register(playerDieBinding);
         EventBus<QuitEvent>.Register(gameOverBinding);
         EventBus<RetryEvent>.Register(retryBinding);
+        EventBus<GamePauseEvent>.Register(pauseBinding);
+        EventBus<GameResumeEvent>.Register(resumeBinding);
     }
     private void OnDisable()
     {
         EventBus<PlayerDieEvent>.Deregister(playerDieBinding);
         EventBus<QuitEvent>.Deregister(gameOverBinding);
         EventBus<RetryEvent>.Deregister(retryBinding);
+        EventBus<GamePauseEvent>.Deregister(pauseBinding);
+        EventBus<GameResumeEvent>.Deregister(resumeBinding);
     }
 
     

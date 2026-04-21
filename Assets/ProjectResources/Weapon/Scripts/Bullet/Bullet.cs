@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using GlobalEvents;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Bullet : MonoBehaviour {
@@ -7,9 +8,10 @@ public class Bullet : MonoBehaviour {
 	public string[] targetTags; // 能够命中的目标标签数组
 	public float damage;
 	public GameObject hitEffect = null;
-	public float pushForce = 0; // 仅敌人子弹使用
+	public float pushForce = 0; 
 	public float lifeTime = 2f; // 子弹生命周期（秒）
-	private float lifeTimer = 0f; // 生命周期计时器
+	// private float lifeTimer = 0f; // 生命周期计时器
+	public GameObject attacker = null;	// 发射者
 
 	protected void Awake()
 	{
@@ -25,19 +27,13 @@ public class Bullet : MonoBehaviour {
 				Physics2D.IgnoreCollision(GetComponent<Collider2D>(), collider, true);
 			}
 		}
+		Destroy(gameObject, lifeTime);
 	}
 
 	protected void Update()
 	{
 		// 更新子弹朝向
 		UpdateBulletRotation();
-		
-		// 自动销毁逻辑
-		lifeTimer += Time.deltaTime;
-		if (lifeTimer >= lifeTime)
-		{
-			Destroy(gameObject);
-		}
 	}
 	
 	/// <summary>
@@ -57,10 +53,8 @@ public class Bullet : MonoBehaviour {
 		}
 	}
 
-	
-
-	private void OnTriggerEnter2D(Collider2D collision) {
-
+	private void OnTriggerEnter2D(Collider2D collision) 
+	{
 		// 检查是否是目标标签
 		bool isTarget = true; // 默认所有可伤害对象都能命中
 		if (targetTags != null && targetTags.Length > 0)
@@ -76,34 +70,34 @@ public class Bullet : MonoBehaviour {
 			}
 		}
 
-		// 处理墙壁碰撞
-		if (collision.CompareTag("Wall"))
-		{
-			SpawnHitEffect();
-			Destroy(gameObject);
-		}
-
 		// 处理可伤害目标碰撞
-		else if (collision.gameObject.GetComponent<Damageable>() && isTarget)
+		if (collision.gameObject.GetComponent<Damageable>() && isTarget)
 		{
-			SpawnHitEffect();
-
+			HandleHitTarget(collision.gameObject);
+			// 触发子弹命中事件
+			EventBus<BulletHitEvent>.Raise(new BulletHitEvent {
+				attacker = attacker,
+				bullet = gameObject,
+				target = collision.gameObject,
+				hitPosition = transform.position,
+				damage = this.damage
+			});
+			// SpawnHitEffect();
+			// Destroy(gameObject);
 			// 显示伤害
-			GameManager.Instance.ShowText((-this.damage).ToString(), 100, Color.white, collision.transform.position + new Vector3(0.5f, 1.75f, 0), Vector3.up, 2.0f);
+			// GameManager.Instance.ShowText((-this.damage).ToString(), 100, Color.white, collision.transform.position + new Vector3(0.5f, 1.75f, 0), Vector3.up, 2.0f);
 			
 			// 击中目标后销毁
-			Destroy(gameObject);
-
-			DealDamage(collision.gameObject.GetComponent<Damageable>());
+			
+			// DealDamage(collision.gameObject.GetComponent<Damageable>());
 		}
 
-		// 处理可破坏物体碰撞
-		else if (collision.CompareTag("Destructible"))
-        {
-			Destroy(collision.gameObject);
-			Destroy(gameObject);
-		}
+	}
 
+	private void HandleHitTarget(GameObject target)
+	{
+		SpawnHitEffect();
+		Destroy(gameObject);
 	}
 
 	// 生成击中效果
@@ -116,13 +110,4 @@ public class Bullet : MonoBehaviour {
 		}
 	}
 
-	protected void DealDamage(Damageable target)
-    {
-		target.GetDamaged(this.damage);
-	}
-
-	public void OnShoot()
-	{
-		Debug.Log("OnShoot");
-	}
 }

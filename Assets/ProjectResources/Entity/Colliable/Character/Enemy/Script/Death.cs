@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 
 /// <summary>
 /// Death Boss类 - 游戏中的死亡Boss

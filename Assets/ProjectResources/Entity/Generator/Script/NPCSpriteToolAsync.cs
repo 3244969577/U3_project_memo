@@ -339,20 +339,29 @@ public class NPCSpriteToolAsync : Singleton<NPCSpriteToolAsync>
     {
         GameObject npc = Instantiate(npc_Prefab);
 
-
-        NPC4DirFrameAnimator anim = npc.GetComponent<NPC4DirFrameAnimator>();
+#region SpriteRenderer
         SpriteRenderer sr = npc.GetComponent<SpriteRenderer>();
         sr.sortingOrder = 10;
         sr.transform.localScale = new Vector3(scale, scale, 1); 
-
+#endregion
 
         Sprite[,] dirFrameSprites = Split4Dir3FrameSprite(fourDirWalkSprite);
-        anim.SetSpriteRenderer(sr);
-        anim.SetSprites(dirFrameSprites);
 
+#region NPC4DirFrameAnimator
+        // NPC4DirFrameAnimator anim = npc.GetComponent<NPC4DirFrameAnimator>();
+        // anim.SetSpriteRenderer(sr);
+        // anim.SetSprites(dirFrameSprites);
+#endregion
 
-        NPCMovement npcMovement = npc.GetComponent<NPCMovement>();
-        npcMovement.moveRange = 5f; // 移动范围
+#region NPCAnimationController
+        NPCAnimationController animController = npc.GetComponent<NPCAnimationController>();
+        animController.SetSprites(dirFrameSprites);
+#endregion
+
+#region NPCMovementController--测试脚本功能
+        NPCMovementController npcMovementController = npc.GetComponent<NPCMovementController>();
+        npcMovementController.SetTargetPosition(Player.instance.transform.position);
+#endregion
 
         return npc;
     }

@@ -1,6 +1,6 @@
-﻿﻿using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 
 
 [RequireComponent(typeof(EnemyAI), typeof(Rigidbody2D))]
@@ -14,6 +14,8 @@ public class Enemy : Character
 	protected float lastAttack = 0f;
 	public int killScore = 100;
 	public float minDifficultyLevel = 1f;
+
+	// 监听BulletHitEvent，参考Bullet代码
 
 	public virtual void MoveTo(Vector3 position)
 	{
@@ -49,15 +51,11 @@ public class Enemy : Character
 		Destroy(gameObject);
 	}
 
-	public override void GetDamaged(float value)
-	{
-		this.healthBar.UpdateHealth(-value);
-	}
 
-	public override void GetDamaged(float value, GameObject attacker)
-	{
-		base.GetDamaged(value, attacker);
-	}
+	// public override void GetDamaged(float value, GameObject attacker)
+	// {
+	// 	base.GetDamaged(value, attacker);
+	// }
 
 	// Basic attack, deal damage on touch
 	public override void Attack(Character target)
@@ -75,7 +73,7 @@ public class Enemy : Character
 	private void AttackTo(Character target)
 	{
 		Debug.Log("Attack to " + target.name);
-		target.GetDamaged(this.damage);
+		target.GetDamaged(this.damage, gameObject);
 
 		Vector3 direction = (target.transform.position - transform.position).normalized;
 		Vector2 headingDirection = new Vector2(direction.x * speed*2, direction.y * speed*2);

@@ -1,5 +1,5 @@
 using UnityEngine;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 
 public class PlayerAnimationController : MonoBehaviour {
     private Animator animator;

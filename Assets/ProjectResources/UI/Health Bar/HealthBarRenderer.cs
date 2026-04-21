@@ -11,7 +11,11 @@ public class HealthBarRenderer : MonoBehaviour
     public Canvas canvas;
     private Slider slider;
 
+    [Header("平滑渐变设置")]
+    public float smoothSpeed = 5f; // 平滑过渡速度
+
     private GameObject healthBar;
+    private float targetFillAmount;
 
     private void Start()
     {
@@ -23,12 +27,20 @@ public class HealthBarRenderer : MonoBehaviour
         this.slider.minValue = 0;
         this.slider.maxValue = target.GetMaxHealth();
         this.slider.value = target.GetHealth();
+        targetFillAmount = target.GetHealth();
     }
 
     private void Update()
     {
-        float value = target.GetHealth();
-        this.slider.value = Math.Max(value, this.slider.minValue);
+        float currentHealth = target.GetHealth();
+        targetFillAmount = Math.Max(currentHealth, this.slider.minValue);
+        
+        // 平滑过渡血条填充量
+        if (slider.value != targetFillAmount)
+        {
+            slider.value = Mathf.Lerp(slider.value, targetFillAmount, smoothSpeed * Time.deltaTime);
+        }
+        
         this.healthBar.transform.position = this.target.transform.position + Vector3.up * 1.75f;
     }
 

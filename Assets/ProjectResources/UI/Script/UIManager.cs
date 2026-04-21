@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 
 public class UIManager : MonoBehaviour
 {

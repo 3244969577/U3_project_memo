@@ -7,12 +7,14 @@ public class PortalSpawner : MonoBehaviour
 {
     [Header("生成配置")]
     public GameObject portalPrefab; // Portal预制体
+    public GameObject bossPortalPrefab; // Boss Portal预制体
     public float spawnInterval = 30f; // 生成间隔（秒）
     public float spawnDistance = 10f; // 生成距离（玩家周围的圆周半径）
     public KeyCode spawnKey = KeyCode.P; // 手动触发按键
     
     private float spawnTimer = 0f;
     private GameObject player;
+    private int portalWaveCount = 0; // 传送门波数计数器
 
     private void Start()
     {
@@ -53,26 +55,53 @@ public class PortalSpawner : MonoBehaviour
             return;
         }
 
-        // 计算当前难度下的传送门数量
-        int portalCount = CalculatePortalCount();
-        Debug.Log($"当前难度下生成{portalCount}个传送门");
-        
-        // 生成多个传送门
-        for (int i = 0; i < portalCount; i++)
-        {
-            // 计算玩家附近圆周上的随机位置
-            Vector3 spawnPosition = GetRandomPositionOnCircle(player.transform.position, spawnDistance);
+        // 增加波数计数
+        portalWaveCount++;
+        Debug.Log($"当前波数: {portalWaveCount}");
 
-            // 生成Portal
-            GameObject portal = Instantiate(portalPrefab, spawnPosition, Quaternion.identity);
-            Debug.Log($"生成Portal在位置: {spawnPosition}");
+        // 检查是否需要生成Boss传送门
+        if (portalWaveCount % 5 == 0)
+        {
+            // 每5波生成Boss传送门
+            SpawnBossPortals();
+        }
+        else
+        {
+            // 生成普通传送门
+            int portalCount = CalculatePortalCount();
+            Debug.Log($"当前难度下生成{portalCount}个传送门");
+            
+            for (int i = 0; i < portalCount; i++)
+            {
+                Vector3 spawnPosition = GetRandomPositionOnCircle(player.transform.position, spawnDistance);
+                GameObject portal = Instantiate(portalPrefab, spawnPosition, Quaternion.identity);
+                Debug.Log($"生成Portal在位置: {spawnPosition}");
+            }
         }
     }
 
-    /// <summary>
-    /// 计算当前难度下的传送门数量
-    /// </summary>
-    /// <returns>传送门数量</returns>
+    private void SpawnBossPortals()
+    {
+        if (bossPortalPrefab == null)
+        {
+            Debug.LogError("Boss Portal预制体未设置！");
+            return;
+        }
+
+        // 根据难度决定生成Boss传送门的数量
+        float difficulty = GlobalDifficultyLevel.CurrentDifficultyLevel;
+        int bossPortalCount = difficulty >= 4 ? 2 : 1;
+        
+        Debug.Log($"生成{bossPortalCount}个Boss传送门");
+        
+        for (int i = 0; i < bossPortalCount; i++)
+        {
+            Vector3 spawnPosition = GetRandomPositionOnCircle(player.transform.position, spawnDistance);
+            GameObject bossPortal = Instantiate(bossPortalPrefab, spawnPosition, Quaternion.identity);
+            Debug.Log($"生成Boss Portal在位置: {spawnPosition}");
+        }
+    }
+
     private int CalculatePortalCount()
     {
         // 根据难度等级计算传送门数量上限N
@@ -84,12 +113,6 @@ public class PortalSpawner : MonoBehaviour
         return Random.Range(minCount, maxPortalCount + 1);
     }
 
-    /// <summary>
-    /// 在指定圆心和半径的圆周上随机生成一个位置
-    /// </summary>
-    /// <param name="center">圆心位置</param>
-    /// <param name="radius">半径</param>
-    /// <returns>圆周上的随机位置</returns>
     private Vector3 GetRandomPositionOnCircle(Vector3 center, float radius)
     {
         // 生成随机角度

@@ -14,13 +14,6 @@ public static class FungusNodeBuilder
     {
         Debug.Log($"开始构建节点式对话流程，对话节点数：{config.dialogue.Length}");
         
-        // var existingBlocks = flowchart.GetComponents<Block>();
-
-        // for (int i = existingBlocks.Length - 1; i >= 0; i--)
-        // {
-        //     Object.DestroyImmediate(existingBlocks[i]);
-        // }
-        
         // 字典：对话ID → Fungus块（快速跳转）
         Dictionary<string, Block> nodeBlockDict = new Dictionary<string, Block>();
 
@@ -30,7 +23,9 @@ public static class FungusNodeBuilder
             DialogueNode node = config.dialogue[i];
             // 计算块的位置，避免重叠
             Vector2 blockPosition = new Vector2(i * 200, 0);
-            Block nodeBlock = CreateNodeBlock(flowchart, node, config.character, blockPosition);
+            // 第一个节点使用角色名作为 BlockName，其他节点使用 Node_{id} 格式
+            bool isFirstNode = (i == 0);
+            Block nodeBlock = CreateNodeBlock(flowchart, node, config.character, blockPosition, isFirstNode);
             nodeBlockDict.Add(node.id, nodeBlock); 
         }
 
@@ -40,21 +35,14 @@ public static class FungusNodeBuilder
             BindBranchToBlock(nodeBlockDict[node.id], node.branches, nodeBlockDict);
             Debug.Log($"绑定分支");    
         }
-
-        // 3. 设置启动节点（默认从第一个节点开始）
-        // if (config.dialogue.Length > 0 && nodeBlockDict.ContainsKey(config.dialogue[0].id))
-        // {
-        //     flowchart.SetStartBlock(nodeBlockDict[config.dialogue[0].id]);
-        // }
     }
 
     // 创建单个对话节点块（包含 说话 + 等待）
-    private static Block CreateNodeBlock(Flowchart flowchart, DialogueNode node, string npcName, Vector2 blockPosition)
+    private static Block CreateNodeBlock(Flowchart flowchart, DialogueNode node, string npcName, Vector2 blockPosition, bool isFirstNode = false)
     {
         Block block = flowchart.CreateBlock(blockPosition);
-        // 第一个节点使用 NPC 名字作为 BlockName，方便统一调用
-        // 其他节点使用 Node_{id} 格式
-        block.BlockName = node.id == "1" ? $"Node_{npcName}" : $"Node_{node.id}";
+        // 第一个节点使用 Node_{config.character} 格式，其他节点使用 Node_{id} 格式
+        block.BlockName = isFirstNode ? $"Node_{npcName}" : $"Node_{node.id}";
         
         // 按换行符分割文本为多个句子
         string[] sentences = node.text.Split('\n');

@@ -12,8 +12,9 @@ public class Coin : Collectible
         animator = GetComponent<Animator>();
     }
 
-    protected override void OnCollect()
+    protected override void OnCollect(GameObject collector)
     {
+        base.OnCollect(collector);
         this.boxCollider.enabled = false;
         animator.SetTrigger(COLLECTED_ANIM);
         SoundManager.Instance.PlaySound("Coin");

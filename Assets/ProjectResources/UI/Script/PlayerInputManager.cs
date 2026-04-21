@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using GlobalEvents;
 
 public class PlayerInputManager : Singleton<PlayerInputManager>
 {
@@ -65,7 +66,8 @@ public class PlayerInputManager : Singleton<PlayerInputManager>
                 inputField.ActivateInputField();
             }
             
-            GameManager.Instance.FreezeAllMovement();
+            // GameManager.Instance.FreezeAllMovement();
+            GameManager.Instance.PauseGame();
         }
     }
     
@@ -81,7 +83,8 @@ public class PlayerInputManager : Singleton<PlayerInputManager>
                 inputField.text = "";
             }
             
-            GameManager.Instance.UnFreezeAllMovement();
+            // GameManager.Instance.UnFreezeAllMovement();
+            GameManager.Instance.ResumeGame();
         }
     }
     
@@ -109,20 +112,26 @@ public class PlayerInputManager : Singleton<PlayerInputManager>
         AddToHistory(input);
         
         Debug.Log($"Player input: {input}");
+        
+        
+        // 触发玩家输入事件
         OnInputSubmitted?.Invoke(input);
         var npcInteracting = GameManager.Instance.GetNPCInteracting();
-        npcInteracting?.GetComponent<NPCDialogue>()?.SendPlayerMessage(input, 
-            (reply) => {
-                Debug.Log($"NPC reply: {reply}");
-            }, 
-            (replyLines) => {
-                FungusDialogRenderer.Instance.RenderDialogLines(replyLines, 
-                    npcInteracting.GetComponentInChildren<Fungus.Character>(), 
-                    npcInteracting.GetComponent<SpriteRenderer>().sprite
-                );
-            });
-
         
+        // 触发玩家输入事件
+        EventBus<PlayerInputEvent>.Raise(new PlayerInputEvent { input = input, target = npcInteracting });
+        
+        // 该逻辑通过监听事件实现
+        // npcInteracting?.GetComponent<NPCDialogue>()?.SendPlayerMessage(input, 
+        //     (reply) => {
+        //         Debug.Log($"NPC reply: {reply}");
+        //     }, 
+        //     (replyLines) => {
+        //         FungusDialogRenderer.Instance.RenderDialogLines(replyLines, 
+        //             npcInteracting.GetComponentInChildren<Fungus.Character>(), 
+        //             npcInteracting.GetComponent<SpriteRenderer>().sprite
+        //         );
+        //     });
         HideInput();
     }
     

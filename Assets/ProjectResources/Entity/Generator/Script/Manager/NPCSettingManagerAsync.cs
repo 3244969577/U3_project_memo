@@ -8,13 +8,15 @@ using RPG.AI.Utility;
 using System;
 using System.Runtime.CompilerServices;
 using ProjectResources.Utils.Files;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 using Newtonsoft.Json;
+using System.Reflection;
 
 public class NPCSettingManagerAsync : Singleton<NPCSettingManagerAsync>
 {
     [Header("配置")]
     public bool useLLMForDialogue = true; // 控制是否使用LLM生成对话，调试时可以关闭以节省token
+    // public DialogConfigData dialogConfigData;
 
     [Header("UI显示")]
     public Image resultImage;      // 拖入你的Image
@@ -49,6 +51,12 @@ public class NPCSettingManagerAsync : Singleton<NPCSettingManagerAsync>
             statusText.text = "正在生成...请等待";
         }
 
+        // 开始生成NPC事件
+        EventBus<NPCStartGenerateEvent>.Raise(new NPCStartGenerateEvent { 
+            name = name, 
+            personality = personality, 
+            prompt = prompt 
+        });
         Dictionary<string, Node> workflow = JsonReader.ReadWorkflowJson();
 
         // 更新嵌入提示词
@@ -78,7 +86,7 @@ public class NPCSettingManagerAsync : Singleton<NPCSettingManagerAsync>
         // 使用sprite创建一个NPC
         GameObject npc = CreateNPCAround(sprite);
         npc.name = name;
-        EventBus<NPCGeneratedEvent>.Raise(new NPCGeneratedEvent { npc = npc });
+        
 
         InitNPCSetting(npc, name, personality);
 
@@ -93,6 +101,8 @@ public class NPCSettingManagerAsync : Singleton<NPCSettingManagerAsync>
             // 使用默认配置
             BuildDefaultFlowchart(npc, name);
         }
+        // 生成NPC事件
+        EventBus<NPCGeneratedEvent>.Raise(new NPCGeneratedEvent { npc = npc });
     }
 
     private void InitNPCSetting(GameObject npc, string name, string personality)
@@ -100,8 +110,8 @@ public class NPCSettingManagerAsync : Singleton<NPCSettingManagerAsync>
         // 初始化DialogConfig
         NPCDialogueConfig config = npc.GetComponentInChildren<NPCDialogueConfig>();
         
-        string NPCSettingString = "只输出对话，每一句占一行，不能输出其他内容。不能输出任何解释或说明。";
-        config.systemPrompt = personality + "\n" + NPCSettingString;
+        // string NPCSettingString = "只输出对话，每一句占一行，不能输出其他内容。不能输出任何解释或说明。";
+        config.systemPrompt = personality + "\n" + FileUtil.ReadFileAsString("Texts/LLMRspRule.md");
         config.npcName = name;
         config.npcId = name;
 
@@ -113,8 +123,8 @@ public class NPCSettingManagerAsync : Singleton<NPCSettingManagerAsync>
         Debug.Log($"✅ NPC对话配置完成，名称：{name}");
         
         // 初始化Dialogable
-        Dialogable dialogable = npc.GetComponent<Dialogable>();
-        dialogable.config = config;
+        // Dialogable dialogable = npc.GetComponentInChildren<Dialogable>();
+        // dialogable.config = config;
 
         // 初始化Character
         Fungus.Character character = npc.GetComponentInChildren<Fungus.Character>();

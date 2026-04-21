@@ -9,20 +9,24 @@ public class Gun : Weapon
 {
     public Shootable shooter;
     
-    // protected override void UpdateDurability(float value)
-    // {
-    //     this.durability += value;
-
-    //     if (this.durability <= 0)
-    //     {
-    //         this.OnDurabilityBreak();
-    //     }
-    // }
-
-    private void UpdateFirePointWithMousePosition(Vector2 mousePosition)
+#region Weapon Override Methods
+    protected override void UpdatePosition(Vector3 mousePosition)
     {
-        Vector2 firePointPos = shooter.firePoint.position;
-        Vector2 lookDirection = mousePosition - firePointPos;
+        this.UpdateFirePointWithMousePosition(mousePosition);
+    }
+
+    protected override void Attack(Vector3 targetPosition)
+    {
+        this.shooter.ShootBullet(targetPosition);
+    }
+#endregion
+
+
+
+    private void UpdateFirePointWithMousePosition(Vector3 mousePosition)
+    {
+        // Vector3 firePointPos = shooter.firePoint.position;
+        Vector3 lookDirection = mousePosition - transform.position;
 
         float magnitue = lookDirection.magnitude;
 
@@ -53,13 +57,5 @@ public class Gun : Weapon
 
     }
 
-    public override void UpdatePosition(Vector2 mousePosition)
-    {
-        this.UpdateFirePointWithMousePosition(mousePosition);
-    }
-
-    protected override void Attack()
-    {
-        this.shooter.ShootBullet();
-    }
+    
 }

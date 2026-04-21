@@ -4,6 +4,7 @@ public class GeneratorTrigger : MonoBehaviour
 {
 
     private bool isActive = false;
+    private bool isOpen = false;
     public GameObject settingPanel;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -19,13 +20,16 @@ public class GeneratorTrigger : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
-                settingPanel.SetActive(true);
-                GameManager.Instance.PauseGame();
-            }
-            else if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                settingPanel.SetActive(false);
-                GameManager.Instance.ResumeGame();
+                isOpen = !isOpen;
+                settingPanel.SetActive(isOpen);
+                if (isOpen)
+                {
+                    GameManager.Instance.PauseGame();
+                }
+                else
+                {
+                    GameManager.Instance.ResumeGame();
+                }
             }
         }
         else

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Collidable : MonoBehaviour
 {
-    public virtual void Start() { }
     public virtual void OnCollisionEnter2D(Collision2D collision)
     {
 

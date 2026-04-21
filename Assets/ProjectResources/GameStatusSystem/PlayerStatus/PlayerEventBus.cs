@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 
 namespace GameStatusSystem.PlayerStatus
 {

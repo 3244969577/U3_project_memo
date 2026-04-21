@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 public class WinPortal : Collidable
 {
 

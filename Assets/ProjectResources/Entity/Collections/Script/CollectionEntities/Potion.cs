@@ -15,18 +15,26 @@ public class Potion : Collectible
         animator = GetComponent<Animator>();
     }
 
-    protected override void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.name.Equals("Player"))
-        {
-            collision.gameObject.GetComponent<Player>().RestoreHealth(value);
-            this.OnCollect();
-        }
-    }
+    // protected override void OnTriggerEnter2D(Collider2D collision)
+    // {
+    //     if (collision.gameObject.name.Equals("Player"))
+    //     {
+    //         collision.gameObject.GetComponent<Player>().RestoreHealth(value);
+    //         this.OnCollect();
+    //     }
+    // }
 
-    protected override void OnCollect()
+    protected override void OnCollect(GameObject collector)
     {
+        if (collector.GetComponent<Player>().GetHealth() >= collector.GetComponent<Player>().GetMaxHealth())
+        {
+            return;
+        }
+
+        base.OnCollect(collector);
         this.boxCollider.enabled = false;
+        collector.GetComponent<Player>().RestoreHealth(value);
+
         animator.SetTrigger(COLLECTED_ANIM);
         SoundManager.Instance.PlaySound("Pickup");
         string text = "+" + value.ToString() + " hp";

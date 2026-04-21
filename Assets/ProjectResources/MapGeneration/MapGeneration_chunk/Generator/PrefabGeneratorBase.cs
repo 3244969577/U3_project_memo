@@ -73,7 +73,7 @@ public abstract class PrefabGeneratorBase : GeneratorBase
                     TerrainType terrain = chunkData.GetData<TerrainType>(worldPos);
                     if (AllowedTerrainTypes == null || !AllowedTerrainTypes.Contains(terrain))
                     {
-                        Debug.Log($"地形类型 {terrain} 不在允许列表中或允许列表未设置");
+                        // Debug.Log($"地形类型 {terrain} 不在允许列表中或允许列表未设置");
                         continue;
                     }
                     
@@ -94,7 +94,7 @@ public abstract class PrefabGeneratorBase : GeneratorBase
                     
                     // 按概率生成
                     if (UnityEngine.Random.value > SpawnProbability) continue;
-                    Debug.Log($"概率命中, 位置 {worldPos}");
+                    // Debug.Log($"概率命中, 位置 {worldPos}");
                     
                     // 获取预制体并从对象池获取实例
                     GameObject prefab = GetPrefabToSpawn(worldPos, chunkData);
@@ -123,19 +123,19 @@ public abstract class PrefabGeneratorBase : GeneratorBase
                         }
                         else
                         {
-                            Debug.LogWarning($"[{GetType().Name}] 未指定父对象，预制体将没有父对象");
+                            // Debug.LogWarning($"[{GetType().Name}] 未指定父对象，预制体将没有父对象");
                         }
                         
                         // 存储生成位置
                         spawnedPositions.Add(worldPos);
                         spawned++;
                     } else {
-                        Debug.Log($"[{GetType().Name}] 在位置 {worldPos} 获取预制体失败");
+                        // Debug.Log($"[{GetType().Name}] 在位置 {worldPos} 获取预制体失败");
                     }
                 }
             }
 
-            Debug.Log($"[{GetType().Name}] 区块 {chunkCoord} 生成了 {spawned} 个预制体");
+            // Debug.Log($"[{GetType().Name}] 区块 {chunkCoord} 生成了 {spawned} 个预制体");
         }
         catch (Exception e)
         {

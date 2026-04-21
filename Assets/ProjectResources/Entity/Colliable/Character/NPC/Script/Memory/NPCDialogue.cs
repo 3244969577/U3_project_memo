@@ -1,12 +1,53 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using GlobalEvents;
+using NPCSocialEvents;
+using NPCActionEvents;
+using Newtonsoft.Json;
 
 public class NPCDialogue : MonoBehaviour
 {
     public NPCDialogueConfig config;
     private List<ChatMessage> _dialogueHistory = new List<ChatMessage>();
+    private EventBinding<PlayerInputEvent> _playerInputEventBinding;
     
+    private void Awake()
+    {
+        _playerInputEventBinding = new EventBinding<PlayerInputEvent>(HandlePlayerInput);
+    }
+    private void OnEnable()
+    {
+        EventBus<PlayerInputEvent>.Register(_playerInputEventBinding);
+    }
+    private void OnDisable()
+    {
+        EventBus<PlayerInputEvent>.Deregister(_playerInputEventBinding);
+    }
+
+    private void HandlePlayerInput(PlayerInputEvent e)
+    {
+        if (e.target != gameObject)
+        {
+            return;
+        }
+        
+        SendPlayerMessage(e.input, 
+            (reply) => {
+            },
+            (replyLines) => {
+                Debug.Log($"NPC reply lines: {string.Join("\n", replyLines)}");
+                
+                // 使用对话渲染
+                FungusDialogRenderer.Instance.RenderDialogLines(
+                    replyLines,
+                    gameObject.GetComponentInChildren<Fungus.Character>(),
+                    gameObject.GetComponent<SpriteRenderer>().sprite
+                );
+            }
+        );
+    }
+
     private void Start()
     {
         _dialogueHistory.Add(new ChatMessage(){Role = "system", Content = config.systemPrompt});
@@ -23,17 +64,42 @@ public class NPCDialogue : MonoBehaviour
     public void SendPlayerMessage(string playerInput, System.Action<string> onReply, System.Action<List<string>> onReplyLines)
     {
         _dialogueHistory.Add(new ChatMessage(){Role = "user", Content = playerInput});
-        
+
+        ChatMessage socialRelationMsg = new ChatMessage(){Role = "system", Content = getSocialRelationPrompt()};
+        _dialogueHistory.Add(socialRelationMsg);
         TrimHistory();
         
         DoubaoApiManager.Instance.SendChatRequest(_dialogueHistory, 
             reply =>
             {
-                _dialogueHistory.Add(new ChatMessage(){Role = "assistant", Content = reply});
+                Debug.Log($"原始输出: {reply}"); 
+                NPCLLMRsp rsp = JsonConvert.DeserializeObject<NPCLLMRsp>(reply);
+                _dialogueHistory.Add(new ChatMessage(){Role = "assistant", Content = rsp.dialogue});
+
                 
-                List<string> replyLines = ProcessReplyLines(reply);
-                
-                onReply?.Invoke(reply);
+                // 处理NPC行为
+                EventBus<NPCRspActionEvent>.Raise(
+                    new NPCRspActionEvent(){npc = gameObject, action = rsp.action}
+                );
+                // 处理NPC表情
+                GetComponent<NPC_Genearted>().NPC_EventBus.Raise<NPCEmotionEvent>(
+                    new NPCEmotionEvent() {
+                        npc = gameObject, 
+                        emotionName = rsp.emotion
+                    }
+                );
+
+                EventBus<NPCSocialRelationChangeEvent>.Raise(
+                    new NPCSocialRelationChangeEvent() {
+                        npc = gameObject.name,
+                        target = rsp.social_alter.name,
+                        delta = rsp.social_alter.relation
+                    }
+                );
+
+
+                List<string> replyLines = ProcessReplyLines(rsp.dialogue);
+                onReply?.Invoke(rsp.dialogue);
                 onReplyLines?.Invoke(replyLines);
             },
             error =>
@@ -42,6 +108,12 @@ public class NPCDialogue : MonoBehaviour
                 onReplyLines?.Invoke(new List<string>{config.defaultReply});
             }
         );
+        _dialogueHistory.Remove(socialRelationMsg);
+    }
+
+    public string getSocialRelationPrompt() {
+        Dictionary<string, int> socialRelation = NPCSocialManager.Instance.GetSocialRelationOf(gameObject.name);
+        return JsonConvert.SerializeObject(socialRelation);
     }
     
     private List<string> ProcessReplyLines(string reply)
@@ -97,4 +169,17 @@ public class NPCDialogue : MonoBehaviour
         _dialogueHistory.Add(new ChatMessage(){Role = "system", Content = config.systemPrompt});
         PlayerPrefs.DeleteKey($"NPC_History_{config.npcId}");
     }
+}
+
+public class NPCLLMRsp
+{
+    [JsonProperty("action")] public string action;   // 按照LLMRspRule.md中的action
+    [JsonProperty("dialogue")] public string dialogue; // 原始的对话内容
+    [JsonProperty("emotion")] public string emotion;  // 按照LLMRspRule.md中的emotion
+    [JsonProperty("social_alter")] public SocialAlter social_alter;
+}
+public class SocialAlter
+{
+    [JsonProperty("name")] public string name;
+    [JsonProperty("relation")] public int relation;
 }

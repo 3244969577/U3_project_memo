@@ -23,6 +23,7 @@ public class LocalEventBus {
     }
     
     public void Raise<T>(T @event) where T : IEvent {
+        Debug.Log($"Raise local-event: {typeof(T).Name}");
         var eventType = typeof(T);
         if (eventBindings.ContainsKey(eventType)) {
             var bindings = (HashSet<IEventBinding<T>>)eventBindings[eventType];

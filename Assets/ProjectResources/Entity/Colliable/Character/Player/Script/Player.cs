@@ -1,11 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
-using GameStatusSystem.PlayerStatus.Events;
+using GlobalEvents;
 
 
 public class Player : Character
 {
-
 	const string TAG = "Player";      // 玩家标签
 	const string DEATH_ANIM = "Die";      // 死亡动画名称
 
@@ -17,14 +16,17 @@ public class Player : Character
 	public static Inventory inventory;      // 玩家背包
 	public static Player instance;      // 玩家单例实例
 
+	private EventBinding<ObtainEquipmentEvent> obtainEquipmentEventBinding;
+
 	/// <summary>
 	/// 初始化玩家单例实例和背包系统
 	/// - 确保游戏中只有一个玩家实例（单例模式）
 	/// - 创建新的背包实例
 	/// - 设置背包UI并初始隐藏
 	/// </summary>
-	private void Awake()
+	protected override void Awake()
 	{
+		base.Awake();
 		if (Player.instance != null)
 		{
 			Destroy(gameObject);
@@ -34,7 +36,30 @@ public class Player : Character
 		inventory = new Inventory();
 		uiInventory.SetInventory(inventory);
 		uiInventory.Hidden();
+
+		obtainEquipmentEventBinding = new EventBinding<ObtainEquipmentEvent>(OnObtainEquipment);
 	}
+
+#region EventBindings
+	private void OnEnable()
+	{
+		EventBus<ObtainEquipmentEvent>.Register(obtainEquipmentEventBinding);
+	}
+
+	private void OnDisable()
+	{
+		EventBus<ObtainEquipmentEvent>.Deregister(obtainEquipmentEventBinding);
+	}
+
+	private void OnObtainEquipment(ObtainEquipmentEvent e)
+	{
+		Debug.Log("获得装备");
+		Weapon weapon = e.equipment.GetComponent<Weapon>();
+		EquipWeapon(weapon);
+		AddItemToInventory(weapon);
+	}
+
+#endregion
 
 
 	/// <summary>
@@ -46,6 +71,12 @@ public class Player : Character
 	{
 		base.Start();
 		this.weapon = GetComponentInChildren<Weapon>();
+
+		// 初始化玩家生命值事件
+		EventBus<PlayerHPChangeEvent>.Raise( new PlayerHPChangeEvent {
+			currentHealth = this.healthBar.GetHealth(),
+			maxHealth = this.maxHealth
+		});
 	}
 
 	// Update is called once per frame
@@ -60,6 +91,31 @@ public class Player : Character
 			this.SwitchWeapon();
 		}
 	}
+
+	public override void GetDamaged(float value, GameObject attacker)
+	{
+		base.GetDamaged(value, attacker);
+
+		EventBus<PlayerHitEvent>.Raise( new PlayerHitEvent {
+			attacker = attacker,
+			damage = value
+		});
+		EventBus<PlayerHPChangeEvent>.Raise( new PlayerHPChangeEvent {
+			currentHealth = this.healthBar.GetHealth(),
+			maxHealth = this.maxHealth
+		});
+	}
+
+	public override void RestoreHealth(float value)
+    {
+        base.RestoreHealth(value);
+		
+        EventBus<PlayerHPChangeEvent>.Raise( new PlayerHPChangeEvent {
+			currentHealth = this.healthBar.GetHealth(),
+			maxHealth = this.maxHealth
+		});
+    }
+
 
 	/// <summary>
 	/// 更新玩家朝向
