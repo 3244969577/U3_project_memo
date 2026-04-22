@@ -67,6 +67,10 @@ namespace GlobalEvents
         public GameObject target;
     }
 
+    public struct PlayerInteractEvent : IEvent {
+        public GameObject target;
+    }
+    
     // Boss
     public struct BossSpawnEvent : IEvent {
         public GameObject boss;

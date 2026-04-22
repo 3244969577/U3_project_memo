@@ -4,11 +4,11 @@ using GlobalEvents;
 public class PauseManager : MonoBehaviour
 {
     private bool isPaused = false;
-    public KeyCode pauseKey = KeyCode.Escape;
+    public KeyCode pauseKey;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        pauseKey = HotKeyManager.Instance.HotKeySetting.PauseKey;
     }
 
     // Update is called once per frame
