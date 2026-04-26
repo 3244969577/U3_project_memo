@@ -121,10 +121,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a19f9f0236ae5442a8b2fb9a199e00e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  firePoint: {fileID: 665627084366957147}
-  bulletPrefab: {fileID: 4847584998270608119, guid: be56b4a21a2ac624191f1e27761d7ef6, type: 3}
+  bulletPrefabs:
+    items:
+    - Item: {fileID: 4847584998270608119, guid: be56b4a21a2ac624191f1e27761d7ef6, type: 3}
+      Weight: 5
+    - Item: {fileID: 5247374091726930495, guid: d4b73e4ff0a06bc42836647cc833dbc6, type: 3}
+      Weight: 2
   shootingForce: 40
-  fireRate: 0.15
+  fireRate: 0.05
+  spreadAngle: 15
 --- !u!58 &60190356640940078
 CircleCollider2D:
   m_ObjectHideFlags: 0

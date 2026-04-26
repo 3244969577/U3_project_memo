@@ -9,6 +9,7 @@ public class GoldChest : Chest
 
     protected override void OnCollect(GameObject collector)
     {
+
         if (!collected)
         {
             collected = true;
@@ -23,7 +24,7 @@ public class GoldChest : Chest
                 GameObject coin = Instantiate(coinPrefab, transform.position + Random.insideUnitSphere * 5f, transform.rotation);
                 coin.transform.SetParent(this.transform.parent);
             }
-            
+            Destroy(gameObject, 5f);
         }
     }
 }

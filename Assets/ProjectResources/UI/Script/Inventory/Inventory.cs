@@ -9,13 +9,15 @@ public class Inventory
     public Inventory()
     {
         this.itemList = new List<Collectible>();
-
     }
 
+
+#region 公共接口
     public void AddItem(Collectible item)
     {
         this.itemList.Add(item);
     }
+
     public void RemoveItem(Collectible item)
     {
         this.itemList.Remove(item);
@@ -33,4 +35,7 @@ public class Inventory
     {
         return this.itemList;
     }
+#endregion
+
+
 }

@@ -138,8 +138,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5aa45cb59117032429806733e0f77ad1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  durability: 5
-  useCost: 1
+  score: 100
   shooter: {fileID: 6494515500750891232}
 --- !u!114 &6494515500750891232
 MonoBehaviour:
@@ -153,10 +152,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a19f9f0236ae5442a8b2fb9a199e00e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  firePoint: {fileID: 6494515500338822474}
-  bulletPrefab: {fileID: 4847584998270608119, guid: be56b4a21a2ac624191f1e27761d7ef6, type: 3}
+  bulletPrefabs:
+    items:
+    - Item: {fileID: 9147764325112854575, guid: e73ab0a7556534140ad9ac50f26a334a, type: 3}
+      Weight: 1
   shootingForce: 20
   fireRate: 0.3
+  spreadAngle: 0
 --- !u!58 &7930630986172025810
 CircleCollider2D:
   m_ObjectHideFlags: 0

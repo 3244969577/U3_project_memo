@@ -1,17 +1,31 @@
 using UnityEngine;
 using System.Collections;
 using GlobalEvents;
+using System;
+
 
 [RequireComponent(typeof(Rigidbody2D))]
-public class Bullet : MonoBehaviour {
+public class Bullet : MonoBehaviour, IPoolable
+{
+	[SerializeField] private GameObject prefab;
+	public GameObject Prefab { get => prefab; }
 
-	public string[] targetTags; // 能够命中的目标标签数组
+
 	public float damage;
-	public GameObject hitEffect = null;
+	public float moveSpeed = 10f; // 移动速度
 	public float pushForce = 0; 
+
 	public float lifeTime = 2f; // 子弹生命周期（秒）
-	// private float lifeTimer = 0f; // 生命周期计时器
+	public string[] targetTags; // 能够命中的目标标签数组
+	public GameObject hitEffect = null;
 	public GameObject attacker = null;	// 发射者
+
+
+#region hook
+	public event Action<GameObject> OnBulletHit;
+
+#endregion
+
 
 	protected void Awake()
 	{
@@ -27,18 +41,21 @@ public class Bullet : MonoBehaviour {
 				Physics2D.IgnoreCollision(GetComponent<Collider2D>(), collider, true);
 			}
 		}
-		Destroy(gameObject, lifeTime);
+		// Destroy(gameObject, lifeTime);
+		Invoke("Recycle", lifeTime);
+	}
+
+	public void Recycle()
+	{
+		GlobalObjectPool.Instance.Recycle(gameObject);
 	}
 
 	protected void Update()
 	{
-		// 更新子弹朝向
-		UpdateBulletRotation();
+		// 朝子弹朝向移动
+		transform.Translate(Vector2.right * moveSpeed * Time.deltaTime);
 	}
-	
-	/// <summary>
-	/// 更新子弹朝向，使其与运动方向一致
-	/// </summary>
+
 	private void UpdateBulletRotation()
 	{
 		Rigidbody2D rb = GetComponent<Rigidbody2D>();
@@ -55,23 +72,8 @@ public class Bullet : MonoBehaviour {
 
 	private void OnTriggerEnter2D(Collider2D collision) 
 	{
-		// 检查是否是目标标签
-		bool isTarget = true; // 默认所有可伤害对象都能命中
-		if (targetTags != null && targetTags.Length > 0)
-		{
-			isTarget = false;
-			foreach (string tag in targetTags)
-			{
-				if (collision.CompareTag(tag))
-				{
-					isTarget = true;
-					break;
-				}
-			}
-		}
-
 		// 处理可伤害目标碰撞
-		if (collision.gameObject.GetComponent<Damageable>() && isTarget)
+		if (collision.gameObject.GetComponent<Damageable>() && IsTarget(collision.gameObject))
 		{
 			HandleHitTarget(collision.gameObject);
 			// 触发子弹命中事件
@@ -82,22 +84,16 @@ public class Bullet : MonoBehaviour {
 				hitPosition = transform.position,
 				damage = this.damage
 			});
-			// SpawnHitEffect();
-			// Destroy(gameObject);
-			// 显示伤害
-			// GameManager.Instance.ShowText((-this.damage).ToString(), 100, Color.white, collision.transform.position + new Vector3(0.5f, 1.75f, 0), Vector3.up, 2.0f);
-			
-			// 击中目标后销毁
-			
-			// DealDamage(collision.gameObject.GetComponent<Damageable>());
+			// 触发子弹命中事件
 		}
-
 	}
 
 	private void HandleHitTarget(GameObject target)
 	{
 		SpawnHitEffect();
-		Destroy(gameObject);
+		// 触发子弹命中事件
+		OnBulletHit?.Invoke(target);
+		Recycle();
 	}
 
 	// 生成击中效果
@@ -105,9 +101,39 @@ public class Bullet : MonoBehaviour {
 	{
 		if (hitEffect != null)
 		{
-			GameObject effect = Instantiate(hitEffect, transform.position, Quaternion.identity);
-			Destroy(effect, 1f);
+			GameObject effect = GlobalObjectPool.Instance.Spawn(hitEffect, transform.position, Quaternion.identity);
+			GlobalObjectPool.Instance.Recycle(effect, hitEffect);
 		}
 	}
+
+
+#region helper
+	public bool IsTarget(GameObject target)
+	{
+		return targetTags != null && (
+			targetTags.Length == 0 ||
+			ContainsTag(target.tag)
+		);
+	}
+
+	private bool ContainsTag(string tag)
+	{
+		if (targetTags == null)
+		{
+			return false;
+		}
+		
+		foreach (string targetTag in targetTags)
+		{
+			if (tag == targetTag)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+#endregion
+
 
 }

@@ -107,10 +107,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a19f9f0236ae5442a8b2fb9a199e00e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  firePoint: {fileID: 5974419123305901147}
-  bulletPrefab: {fileID: 4901200913563074436, guid: b4f60de599d07a5438791392e7e60543, type: 3}
-  shootingForce: 100
+  bulletPrefabs:
+    items:
+    - Item: {fileID: 4901200913563074436, guid: b4f60de599d07a5438791392e7e60543, type: 3}
+      Weight: 1
+  bulletSpeed: 100
   fireRate: 0.8
+  spreadAngle: 0
 --- !u!114 &5974419121518929616
 MonoBehaviour:
   m_ObjectHideFlags: 0

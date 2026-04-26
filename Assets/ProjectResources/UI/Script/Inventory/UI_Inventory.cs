@@ -11,6 +11,7 @@ public class UI_Inventory : MonoBehaviour
     private Transform itemSlotTemplate;
     private float lastShownTime=0;
 
+#region hook
     private void Awake()
     {
         itemSlotContainer = transform.Find("ItemSlotContainer");
@@ -29,7 +30,10 @@ public class UI_Inventory : MonoBehaviour
             Input.GetKeyDown(KeyCode.Alpha4))
             Show();
     }
+#endregion
 
+
+#region 公共接口
     public void Show()
     {
         transform.gameObject.SetActive(true);
@@ -47,7 +51,10 @@ public class UI_Inventory : MonoBehaviour
         Show();
         RefreshInventoryItems();
     }
+#endregion
 
+
+#region helper
     private void RefreshInventoryItems()
     {
         int x = 0;
@@ -72,6 +79,8 @@ public class UI_Inventory : MonoBehaviour
                 y++;
             }
         }
-
     }
+#endregion
+
+
 }

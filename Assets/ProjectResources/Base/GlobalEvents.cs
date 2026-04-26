@@ -25,15 +25,6 @@ namespace GlobalEvents
     // 玩家射击事件
     public struct PlayerAttackEvent : IEvent {}
 
-    // 玩家命中敌人事件
-    public struct PlayerHitEnemyEvent : IEvent {
-        public GameObject enemy;
-        public float damage;
-    }
-
-    // 玩家子弹未命中事件
-    public struct PlayerBulletMissEvent : IEvent {}
-
     // 玩家获得装备事件
     public struct ObtainEquipmentEvent : IEvent {
         public GameObject equipment;
@@ -91,5 +82,12 @@ namespace GlobalEvents
 
     public struct EntityDieEvent : IEvent {
         public GameObject entity;
+    }
+
+    public struct PlayerGainExpEvent : IEvent {
+        public float exp;
+    }
+    public struct PlayerLevelUpEvent: IEvent { 
+        public int newLevel;
     }
 }

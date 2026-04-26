@@ -10,12 +10,12 @@ namespace GameStatusSystem.DifficultySystem
         [Header("难度评估配置")]
         public DifficultySettings settings;
 
-        private PlayerEventBus _playerStatus;
+        private PlayerEventWatcher _playerStatus;
         private float _currentDifficulty = 1.0f;
 
         private void Start()
         {
-            _playerStatus = PlayerEventBus.Instance;
+            _playerStatus = PlayerEventWatcher.Instance;
 
             // 每5秒评估一次
             InvokeRepeating(nameof(UpdateDifficulty), 1f, 5f);

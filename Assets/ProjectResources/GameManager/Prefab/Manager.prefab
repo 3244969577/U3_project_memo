@@ -356,6 +356,51 @@ MonoBehaviour:
     Time: 0.16
     Smoothing: 8.6
     IgnoreY: 0
+--- !u!1 &3660741394141556155
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2896987203405339914}
+  - component: {fileID: 7478007826175478985}
+  m_Layer: 0
+  m_Name: HotKeys
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2896987203405339914
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3660741394141556155}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7013474138313770359}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7478007826175478985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3660741394141556155}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0021149ac55fecf43b746065e4eae200, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HotKeyManager
+  hotKeySetting: {fileID: 11400000, guid: 7d8cce59598cd52438e77066d04cbb1c, type: 2}
 --- !u!1 &3923416376018095046
 GameObject:
   m_ObjectHideFlags: 0
@@ -1067,6 +1112,7 @@ Transform:
   - {fileID: 8957448311262420554}
   - {fileID: 8866459427916210250}
   - {fileID: 1957301142082227206}
+  - {fileID: 2896987203405339914}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &7013474138313770358
@@ -1337,6 +1383,7 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 1062484542313970387, guid: 0bd46ff91da30a1448b0ba32da6a997f, type: 3}
     - {fileID: 1062484541102083261, guid: 0bd46ff91da30a1448b0ba32da6a997f, type: 3}
+    - {fileID: 4980282314096600486, guid: 0bd46ff91da30a1448b0ba32da6a997f, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1062484541656845960, guid: 0bd46ff91da30a1448b0ba32da6a997f, type: 3}
       insertIndex: -1
@@ -1438,7 +1485,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3554666881659154829, guid: e8684137aca1c0f4795ec3425840fe15, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5212961154164475859, guid: e8684137aca1c0f4795ec3425840fe15, type: 3}
       propertyPath: pauseUIPanel

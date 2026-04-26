@@ -22,6 +22,7 @@ public class Chest : Collectible
         {
             collected = true;
             animator.SetTrigger(COLLECTED_ANIM);
+            Destroy(gameObject, 5f);
         }
     }
 }

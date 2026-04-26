@@ -12,7 +12,7 @@ public class BossPortal : Collidable
     
     [Header("动画配置")]
     public Animator animator; // 动画控制器
-    public const string closeAnimationParam = "isClosing"; // 关闭动画触发参数
+    public const string closeAnimationParam = "close"; // 关闭动画触发参数
     public const string openAnimationParam = "opened"; // 开启动画触发参数
     
     private GameObject spawnedBoss; // 已生成的Boss
@@ -29,11 +29,12 @@ public class BossPortal : Collidable
 
     protected void Update()
     {
-        // 检查Boss是否已被击杀
-        if (hasSpawnedBoss && spawnedBoss == null)
+        // // 检查Boss是否已被击杀
+        if (isSpawning)
         {
-            // Boss已被击杀，关闭传送门
-            ProcessClose();
+            SpawnBoss();
+            isSpawning = false;
+            animator.SetTrigger(closeAnimationParam);
         }
     }
 
@@ -78,17 +79,12 @@ public class BossPortal : Collidable
         }
         isSpawning = true;
         
-        // 立即生成Boss
-        SpawnBoss();
     }
 
     public void ProcessClose()
     {
         Debug.Log("Boss传送门关闭");
-        if (animator != null)
-        {
-            animator.SetBool(closeAnimationParam, true);
-        }
         isSpawning = false;
+        Destroy(gameObject);
     }
 }
